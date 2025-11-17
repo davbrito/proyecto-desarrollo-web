@@ -6,15 +6,17 @@ import {
   HttpStatus,
   Inject,
   Post,
+  Req,
   Request,
   Res,
   UseGuards,
 } from "@nestjs/common";
+import { ApiBody } from "@nestjs/swagger";
 import type { Request as RequestType, Response as ResponseType } from "express";
-import { ms } from "ms";
 import { SignInDto, SignUpDto } from "./auth.dto.js";
 import { AuthService } from "./auth.service.js";
-import { JwtAuthGuard } from "./jwt-auth.guard.js";
+import { AuthenticatedGuard } from "./authenticated.guard.js";
+import { LocalGuard } from "./local.guard.js";
 
 @Controller("auth")
 export class AuthController {
@@ -23,50 +25,45 @@ export class AuthController {
     private authService: AuthService,
   ) {}
 
+  @UseGuards(LocalGuard)
   @HttpCode(HttpStatus.OK)
   @Post("login")
-  async login(
-    @Body() signInDto: SignInDto,
-    @Res({ passthrough: true }) res: ResponseType,
-  ) {
-    const result = await this.authService.login(signInDto);
-
-    this._setAuthCookie(res, result.access_token);
-
-    return result;
+  @ApiBody({ type: SignInDto })
+  async login(@Req() req: RequestType) {
+    return req.user;
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Post("register")
-  async register(
-    @Body() signUpDto: SignUpDto,
-    @Res({ passthrough: true }) res: ResponseType,
-  ) {
+  async register(@Body() signUpDto: SignUpDto, @Req() req: RequestType) {
     const result = await this.authService.register(signUpDto);
-    this._setAuthCookie(res, result.access_token);
+
+    await new Promise((resolve, reject) =>
+      req.logIn(result.user, (err) => (err ? reject(err) : resolve(null))),
+    );
+
     return result;
   }
 
   @HttpCode(HttpStatus.OK)
   @Post("logout")
-  logout(@Res({ passthrough: true }) res: ResponseType) {
-    this._removeAuthCookie(res);
-    return { message: "ok" };
+  logout(@Req() req: RequestType, @Res() res: ResponseType) {
+    req.logout((err) => {
+      if (err) {
+        res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: "Logout failed" });
+        throw err;
+      }
+
+      res.sendStatus(HttpStatus.OK).json({ message: "ok" }).end();
+    });
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthenticatedGuard)
   @Get("profile")
   getProfile(@Request() req: RequestType) {
     return req.user;
-  }
-
-  private _setAuthCookie(res: ResponseType, accessToken: string): void {
-    res.cookie("auth_token", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: ms("1h"),
-    });
   }
 
   private _removeAuthCookie(res: ResponseType): void {

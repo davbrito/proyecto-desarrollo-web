@@ -1,7 +1,5 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
-import { User } from "../users/user.entity.js";
 import { UsersService } from "../users/users.service.js";
 import { SignInDto, SignUpDto } from "./auth.dto.js";
 
@@ -12,7 +10,6 @@ export class AuthService {
   constructor(
     configService: ConfigService,
     private usersService: UsersService,
-    private jwtService: JwtService,
   ) {
     this.authSecret = configService.getOrThrow<string>("AUTH_SECRET");
   }
@@ -30,24 +27,22 @@ export class AuthService {
       throw new UnauthorizedException("Invalid credentials");
     }
 
-    return {
-      access_token: await this.jwtService.signAsync(user.toJwtPayload()),
-      user: user.toDTO(),
-    };
+    return { user: user.toDTO() };
   }
 
   async register(signUpDto: SignUpDto) {
     const user = await this.usersService.create(signUpDto);
 
-    return {
-      access_token: await this.jwtService.signAsync(user.toJwtPayload()),
-      user,
-    };
+    return { user: user.toDTO() };
   }
 
-  async createToken(user: User) {
-    return this.jwtService.signAsync(user.toJwtPayload(), {
-      secret: this.authSecret,
-    });
+  async validateUser(username: string, password: string) {
+    const user = await this.usersService.findOneByUsername(username);
+    if (!user) return null;
+
+    const isValid = await user.validatePassword(password);
+    if (!isValid) return null;
+
+    return user.toDTO();
   }
 }

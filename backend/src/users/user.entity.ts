@@ -1,37 +1,48 @@
 import * as bcrypt from "bcrypt";
 import { Exclude } from "class-transformer";
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import type { SessionData } from "express-session";
+import { nanoid } from "nanoid";
+import * as typeorm from "typeorm";
 
 export enum RoleEnum {
   USER = "user",
   ADMIN = "admin",
 }
 
-@Entity()
+export interface UserJwtPayload {
+  sub: string;
+  username: string;
+  role: RoleEnum;
+}
+
+@typeorm.Entity()
 export class User {
-  @PrimaryGeneratedColumn("uuid")
+  @typeorm.PrimaryColumn("text", { default: () => `'${nanoid()}'` })
   id: string;
 
-  @Column("text", { unique: true, nullable: false })
+  @typeorm.Column("text", { unique: true, nullable: false })
   username: string;
 
-  @Column("text", { unique: true, nullable: false })
+  @typeorm.Column("text", { unique: true, nullable: false })
   email: string;
 
-  @Column("text", { nullable: false })
+  @typeorm.Column("text", { nullable: false })
   @Exclude()
   password: string;
 
-  @Column("text")
+  @typeorm.Column("text")
   name: string;
 
-  @Column("text", {
+  @typeorm.Column("text", {
     default: RoleEnum.USER,
     nullable: false,
   })
   role: RoleEnum;
 
-  @BeforeInsert()
+  @typeorm.OneToMany(() => Session, (session) => session.user)
+  sessions: Session[];
+
+  @typeorm.BeforeInsert()
   async hashPassword() {
     const saltRounds = 10;
     this.password = await bcrypt.hash(this.password, saltRounds);
@@ -50,13 +61,38 @@ export class User {
   }
 
   toDTO() {
-    const { password: _, ...result } = this;
-    return result;
+    return {
+      id: this.id,
+      username: this.username,
+      email: this.email,
+      name: this.name,
+      role: this.role,
+    };
   }
 }
 
-export interface UserJwtPayload {
-  sub: string;
-  username: string;
-  role: RoleEnum;
+@typeorm.Entity()
+export class Session {
+  @typeorm.PrimaryColumn("text")
+  id: string;
+
+  @typeorm.Column("text")
+  userId: string;
+
+  @typeorm.Column({ type: "timestamptz", nullable: false })
+  expiredAt: Date;
+
+  @typeorm.CreateDateColumn({ type: "timestamptz" })
+  createdAt: Date;
+
+  @typeorm.DeleteDateColumn({ type: "timestamptz" })
+  destroyedAt: Date | null;
+
+  @typeorm.Column({ type: "json", nullable: false })
+  data: SessionData;
+
+  @typeorm.ManyToOne(() => User, (user) => user.sessions, {
+    onDelete: "CASCADE",
+  })
+  user: User;
 }
