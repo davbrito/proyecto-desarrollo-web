@@ -55,5 +55,25 @@ export default defineConfig(
       ecmaVersion: 2022,
       globals: globals.browser,
     },
+    rules: {
+      "react-refresh/only-export-components": [
+        "error",
+        {
+          allowConstantExport: true,
+          allowExportNames: [
+            // React Router exports
+            "loader",
+            "clientLoader",
+            "action",
+            "clientAction",
+            "headers",
+            "handle",
+            "links",
+            "meta",
+            "shouldRevalidate",
+          ],
+        },
+      ],
+    },
   },
 );
