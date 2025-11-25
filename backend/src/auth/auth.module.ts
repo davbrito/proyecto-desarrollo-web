@@ -1,38 +1,29 @@
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
+import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
-import { getRepositoryToken, TypeOrmModule } from "@nestjs/typeorm";
-import { ms } from "ms";
-import { Session } from "../users/user.entity.js";
 import { UsersModule } from "../users/users.module.js";
 import { AuthController } from "./auth.controller.js";
 import { AuthService } from "./auth.service.js";
-import { LocalStrategy } from "./local.strategy.js";
-import { SessionSerializer } from "./session.serializer.js";
-import { SessionStore } from "./session.store.js";
-import { Repository } from "typeorm";
+import { JwtRefreshStrategy } from "./strategies/jwt-refresh.strategy.js";
+import { JwtStrategy } from "./strategies/jwt.strategy.js";
+import { LocalStrategy } from "./strategies/local.strategy.js";
 
 @Module({
   imports: [
-    ConfigModule,
     UsersModule,
-    PassportModule.register({ session: true }),
-    TypeOrmModule.forFeature([Session]),
+    PassportModule.register({ session: false }),
+    JwtModule,
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    SessionSerializer,
-    LocalStrategy,
-    {
-      provide: SessionStore,
-      inject: [getRepositoryToken(Session)],
-      useFactory: (repository: Repository<Session>) =>
-        new SessionStore(repository, {
-          cleanupLimit: 100,
-          ttl: ms("7d") / 1000,
-        }),
-    },
-  ],
+  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
 })
 export class AuthModule {}
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Express {
+    interface User {
+      id: string;
+    }
+  }
+}
