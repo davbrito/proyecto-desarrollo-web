@@ -22,8 +22,8 @@ export class User {
   @typeorm.Column("text", { unique: true, nullable: false })
   username: string;
 
-  @typeorm.Column("text", { unique: true, nullable: false })
-  email: string;
+  @typeorm.Column("text", { unique: true, nullable: true })
+  email: string | null;
 
   @Exclude()
   @typeorm.Column("text", { nullable: false })
