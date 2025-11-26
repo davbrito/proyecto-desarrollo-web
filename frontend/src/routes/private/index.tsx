@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api";
+import { Suspense } from "react";
 import { Await, Form } from "react-router";
 import type { Route } from "./+types/index";
-import { apiClient } from "@/lib/api";
-import { refreshSession } from "@/lib/auth";
-import { Suspense } from "react";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -38,13 +37,13 @@ export default function Home({ loaderData }: Route.ComponentProps) {
       <Form action="/logout" method="post" className="contents">
         <Button type="submit">Logout</Button>
       </Form>
-      <Button
+      {/* <Button
         onClick={() => {
           refreshSession();
         }}
       >
         Refresh Token
-      </Button>
+      </Button> */}
     </main>
   );
 }
