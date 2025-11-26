@@ -1,3 +1,4 @@
+import * as bcrypt from "bcrypt";
 import {
   Column,
   CreateDateColumn,
@@ -9,6 +10,7 @@ import {
 import { User } from "./user.entity.js";
 
 @Entity()
+@Index(["user", "createdAt"])
 export class RefreshToken {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -16,18 +18,19 @@ export class RefreshToken {
   @Column("text", { nullable: false })
   tokenHash: string;
 
-  @Index()
   @ManyToOne(() => User, { onDelete: "CASCADE", nullable: false })
   user: User;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @Index()
   @Column("timestamptz", { nullable: false })
   expiresAt: Date;
 
-  @Index()
   @Column({ type: "boolean", default: false })
   isRevoked: boolean;
+
+  validateHash(hash: string): Promise<boolean> {
+    return bcrypt.compare(hash, this.tokenHash);
+  }
 }

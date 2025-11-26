@@ -1,8 +1,12 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { randomBytes } from "node:crypto";
-import { ILike, MoreThan, Repository } from "typeorm";
+import { ILike, Repository } from "typeorm";
 import { REFRESH_TOKEN_MAX_AGE } from "../auth/auth.constants.js";
 import { SignUpDto } from "../auth/auth.dto.js";
 import { RefreshToken } from "./refresh-token.entity.js";
@@ -85,16 +89,38 @@ export class UsersService {
   ): Promise<RefreshToken | null> {
     if (!refreshToken) return null;
 
-    const [id, tokenValue] = refreshToken.split(".", 2);
-    if (!id || !tokenValue) return null;
+    const [id, hash] = refreshToken.split(".", 2);
+    if (!id || !hash) return null;
 
-    const stored = await this.refreshTokensRepository.findOne({
-      where: { id, expiresAt: MoreThan(new Date()), isRevoked: false },
-      relations: ["user"],
-    });
-    if (!stored) return null;
+    const qb = this.refreshTokensRepository.createQueryBuilder("tokens");
 
-    const isMatching = await bcrypt.compare(tokenValue, stored.tokenHash);
+    const [stored] = await qb
+      .where({ id })
+      .leftJoinAndSelect("tokens.user", "user")
+      .getMany();
+
+    if (!stored) {
+      throw new UnauthorizedException({
+        message: "Invalid refresh token",
+        code: "INVALID_TOKEN",
+      });
+    }
+
+    if (stored.isRevoked) {
+      throw new UnauthorizedException({
+        message: "Session has been revoked",
+        code: "INVALID_TOKEN",
+      });
+    }
+
+    if (stored.expiresAt < new Date()) {
+      throw new UnauthorizedException({
+        message: "Refresh token has expired",
+        code: "EXPIRED_TOKEN",
+      });
+    }
+
+    const isMatching = await stored.validateHash(hash);
     if (!isMatching) return null;
 
     return stored;
@@ -118,28 +144,37 @@ export class UsersService {
     expiresAt: Date;
     tokenHash: string;
   }): Promise<string | null> {
+    const mainQb = this.refreshTokensRepository.createQueryBuilder("tokens");
     if (oldRefreshTokenId) {
-      await this.refreshTokensRepository.delete(oldRefreshTokenId);
+      mainQb.addCommonTableExpression(
+        this.refreshTokensRepository
+          .createQueryBuilder()
+          .delete()
+          .where("id = :oldRefreshTokenId", { oldRefreshTokenId }),
+        "deleted_old_token",
+      );
     }
-
-    const tokensToDeleteQuery = this.refreshTokensRepository
-      .createQueryBuilder("tokens")
-      .select("tokens.id")
-      .where("tokens.userId = :userId", { userId })
-      .andWhere("NOT tokens.isRevoked")
-      .andWhere("tokens.expiresAt > NOW()")
-      .orderBy("tokens.createdAt", "DESC")
-      .addOrderBy("tokens.id", "DESC")
-      .offset(this.MAX_ACTIVE_REFRESH_SESSIONS);
 
     const deletedTokensQuery = this.refreshTokensRepository
       .createQueryBuilder()
       .delete()
-      .where("id IN (select id from tokens_to_delete)");
+      .where(
+        `id IN (${this.refreshTokensRepository
+          .createQueryBuilder("tokens")
+          .subQuery()
+          .select("tokens.id")
+          .from(RefreshToken, "tokens")
+          .where("tokens.userId = :userId")
+          .andWhere("NOT tokens.isRevoked")
+          .andWhere("tokens.expiresAt > NOW()")
+          .orderBy("tokens.createdAt", "DESC")
+          .addOrderBy("tokens.id", "DESC")
+          .offset(this.MAX_ACTIVE_REFRESH_SESSIONS)
+          .getQuery()})`,
+        { userId },
+      );
 
-    const query = this.refreshTokensRepository
-      .createQueryBuilder("tokens")
-      .addCommonTableExpression(tokensToDeleteQuery, "tokens_to_delete")
+    const query = mainQb
       .addCommonTableExpression(deletedTokensQuery, "deleted_tokens")
       .insert()
       .values({

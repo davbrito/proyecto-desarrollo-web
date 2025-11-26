@@ -1,7 +1,14 @@
 import * as bcrypt from "bcrypt";
 import { Exclude } from "class-transformer";
 import { nanoid } from "nanoid";
-import * as typeorm from "typeorm";
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryColumn,
+} from "typeorm";
+import { RefreshToken } from "./refresh-token.entity.js";
 
 export enum RoleEnum {
   USER = "user",
@@ -14,31 +21,34 @@ export interface TokenPayload {
   role: RoleEnum;
 }
 
-@typeorm.Entity()
+@Entity()
 export class User {
-  @typeorm.PrimaryColumn("text", { default: () => `'${nanoid()}'` })
+  @PrimaryColumn("text", { default: () => `'${nanoid()}'` })
   id: string;
 
-  @typeorm.Column("text", { unique: true, nullable: false })
+  @Column("text", { unique: true, nullable: false })
   username: string;
 
-  @typeorm.Column("text", { unique: true, nullable: true })
+  @Column("text", { unique: true, nullable: true })
   email: string | null;
 
   @Exclude()
-  @typeorm.Column("text", { nullable: false })
+  @Column("text", { nullable: false })
   password: string;
 
-  @typeorm.Column("text")
+  @Column("text")
   name: string;
 
-  @typeorm.Column("text", {
+  @Column("text", {
     default: RoleEnum.USER,
     nullable: false,
   })
   role: RoleEnum;
 
-  @typeorm.BeforeInsert()
+  @ManyToOne(() => RefreshToken, (token) => token.user)
+  refreshTokens: RefreshToken[];
+
+  @BeforeInsert()
   async hashPassword() {
     const saltRounds = 10;
     this.password = await bcrypt.hash(this.password, saltRounds);

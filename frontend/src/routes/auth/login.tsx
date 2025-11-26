@@ -59,7 +59,6 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
       return parseWithZod(context.formData, { schema: loginSchema });
     },
   });
-  console.log("Action Data:", form.errors, form.allErrors);
 
   return (
     <AuthTemplate
