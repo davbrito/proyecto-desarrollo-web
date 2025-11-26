@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
+import { extractErrorMessages } from "@/lib/api";
 import { register } from "@/lib/auth";
 import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
@@ -17,8 +18,6 @@ import { omit } from "lodash-es";
 import { Form, Link, redirect, useNavigation } from "react-router";
 import { z } from "zod";
 import type { Route } from "./+types/register";
-import { HTTPError } from "ky";
-import { extractErrorMessages } from "@/lib/api";
 
 const registerSchema = z
   .object({
@@ -57,7 +56,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return submission.reply();
   }
 
-  await register(submission.value).then(
+  return await register(submission.value).then(
     () => {
       throw redirect("/");
     },

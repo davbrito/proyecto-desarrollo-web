@@ -77,7 +77,7 @@ export async function refreshSession(): Promise<AuthDto | null> {
 
   authStore.setState({ isRefreshing: true });
   refreshPromise = apiClient
-    .post("/api/auth/refresh", {
+    .post("api/auth/refresh", {
       retry: 0,
       throwHttpErrors: false,
     })
@@ -118,10 +118,13 @@ export async function register(values: {
   email: string;
   password: string;
 }) {
-  await apiClient.post("api/auth/register", {
-    json: values,
-    retry: 0,
-  });
+  const data = await apiClient
+    .post("api/auth/register", {
+      json: values,
+      retry: 0,
+    })
+    .json<AuthDto>();
+  setSession(data);
 }
 
 export async function logout() {

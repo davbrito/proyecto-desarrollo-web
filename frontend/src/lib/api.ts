@@ -2,6 +2,7 @@ import ky, { HTTPError } from "ky";
 import { getAccessToken, refreshSession } from "./auth";
 
 export const apiClient = ky.create({
+  credentials: "include",
   headers: {
     Accept: "application/json",
   },
@@ -15,9 +16,14 @@ export const apiClient = ky.create({
       },
     ],
     beforeRetry: [
-      async ({ error }) => {
+      async ({ error, retryCount }) => {
         if (error instanceof HTTPError) {
           if (error.response.status === 401) {
+            if (retryCount > 1) {
+              console.warn("Max retries reached. Redirecting to login.");
+              window.location.href = "/login";
+              return;
+            }
             await refreshSession();
           }
         }
@@ -25,7 +31,7 @@ export const apiClient = ky.create({
     ],
   },
   retry: {
-    limit: 1,
+    limit: 2,
     statusCodes: [401],
   },
 });

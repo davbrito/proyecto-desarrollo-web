@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import { extractErrorMessages } from "@/lib/api";
 import { login } from "@/lib/auth";
 import { getInputProps, useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
@@ -36,8 +37,17 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return submission.reply();
   }
 
-  await login(submission.value);
-  throw redirect("/");
+  return await login(submission.value).then(
+    () => {
+      throw redirect("/");
+    },
+    async (error) => {
+      const errors = await extractErrorMessages(error);
+      return submission.reply({
+        formErrors: errors,
+      });
+    },
+  );
 }
 
 export default function LoginRoute({ actionData }: Route.ComponentProps) {
@@ -49,6 +59,7 @@ export default function LoginRoute({ actionData }: Route.ComponentProps) {
       return parseWithZod(context.formData, { schema: loginSchema });
     },
   });
+  console.log("Action Data:", form.errors, form.allErrors);
 
   return (
     <AuthTemplate

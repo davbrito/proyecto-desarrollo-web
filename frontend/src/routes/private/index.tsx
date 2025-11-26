@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Form } from "react-router";
+import { Await, Form } from "react-router";
 import type { Route } from "./+types/index";
 import { apiClient } from "@/lib/api";
+import { refreshSession } from "@/lib/auth";
+import { Suspense } from "react";
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -15,7 +17,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function clientLoader(_: Route.LoaderArgs) {
-  const me = await apiClient.get("/api/auth/me").json();
+  const me = apiClient.get("api/auth/me").json();
   return { me };
 }
 
@@ -24,12 +26,25 @@ export default function Home({ loaderData }: Route.ComponentProps) {
     <main className="flex flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Welcome</h1>
       <p>This is the home page.</p>
-      <pre className="bg-muted rounded-2xl p-3">
-        {JSON.stringify(loaderData.me, null, 2)}
-      </pre>
+      <Suspense fallback={<div>Loading user data...</div>}>
+        <Await resolve={loaderData.me}>
+          {(me) => (
+            <pre className="bg-muted rounded-2xl p-3">
+              {JSON.stringify(me, null, 2)}
+            </pre>
+          )}
+        </Await>
+      </Suspense>
       <Form action="/logout" method="post" className="contents">
         <Button type="submit">Logout</Button>
       </Form>
+      <Button
+        onClick={() => {
+          refreshSession();
+        }}
+      >
+        Refresh Token
+      </Button>
     </main>
   );
 }

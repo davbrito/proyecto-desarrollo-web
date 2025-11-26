@@ -66,6 +66,7 @@ export default defineConfig(
             "links",
             "meta",
             "shouldRevalidate",
+            "clientMiddleware",
           ],
         },
       ],
