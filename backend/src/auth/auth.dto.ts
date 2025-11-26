@@ -1,5 +1,10 @@
 import { Type } from "class-transformer";
-import { IsEmail, IsString, IsStrongPassword } from "class-validator";
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsStrongPassword,
+} from "class-validator";
 import { User } from "../users/user.entity.js";
 
 export class SignInDto {
@@ -17,10 +22,16 @@ export class SignUpDto {
   @IsString()
   name: string;
 
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string | null;
 
-  @IsStrongPassword({ minSymbols: 0 })
+  @IsStrongPassword(
+    { minSymbols: 0, minLength: 6, minUppercase: 0, minNumbers: 0 },
+    {
+      message: "La contraseña debe tener al menos 6 caracteres.",
+    },
+  )
   password: string;
 }
 
