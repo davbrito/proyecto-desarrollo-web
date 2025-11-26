@@ -20,7 +20,7 @@ export function PasswordInput({ className, ...props }: PasswordInputProps) {
   const [visible, setVisible] = React.useState(false);
 
   return (
-    <InputGroup>
+    <InputGroup className="has-autofill:overflow-clip">
       <InputGroupInput
         {...props}
         type={visible ? "text" : "password"}
