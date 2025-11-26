@@ -1,11 +1,19 @@
-import { ClassSerializerInterceptor, ValidationPipe } from "@nestjs/common";
+import {
+  ClassSerializerInterceptor,
+  ConsoleLogger,
+  ValidationPipe,
+} from "@nestjs/common";
 import { NestFactory, Reflector } from "@nestjs/core";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module.js";
 import { configureSwagger } from "./config/swagger.js";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: new ConsoleLogger({
+      json: process.env.NODE_ENV === "production",
+    }),
+  });
 
   app.setGlobalPrefix("api");
 
