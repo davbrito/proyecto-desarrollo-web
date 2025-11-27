@@ -8,17 +8,12 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from "typeorm";
+import type { TokenPayload } from "../auth/token-payload.interface.js";
 import { RefreshToken } from "./refresh-token.entity.js";
 
 export enum RoleEnum {
   USER = "user",
   ADMIN = "admin",
-}
-
-export interface TokenPayload {
-  sub: string;
-  username: string;
-  role: RoleEnum;
 }
 
 @Entity()
