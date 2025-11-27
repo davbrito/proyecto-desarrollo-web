@@ -1,7 +1,7 @@
 import { registerAs } from "@nestjs/config";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 
-const databaseConfig = registerAs(
+export const databaseConfig = registerAs(
   "database",
   () =>
     ({
@@ -12,5 +12,3 @@ const databaseConfig = registerAs(
       synchronize: false,
     }) satisfies TypeOrmModuleOptions,
 );
-
-export default databaseConfig;
