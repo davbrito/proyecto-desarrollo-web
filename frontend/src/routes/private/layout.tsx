@@ -9,10 +9,7 @@ const authMiddleware: Route.ClientMiddlewareFunction = async () => {
     throw redirect("/login");
   }
 
-  getSession().then(
-    (session) => console.log("Session in middleware:", session),
-    (error) => console.error("Error getting session in middleware:", error),
-  );
+  getSession();
 };
 
 export const clientMiddleware: Route.ClientMiddlewareFunction[] = [
