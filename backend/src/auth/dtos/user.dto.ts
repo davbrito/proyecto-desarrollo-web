@@ -8,13 +8,13 @@ export class UserDto {
   @ApiProperty()
   username: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, nullable: true })
   email: string | null;
 
   @ApiProperty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ enum: RoleEnum })
   role: RoleEnum;
 
   constructor(partial: Partial<UserDto>) {
