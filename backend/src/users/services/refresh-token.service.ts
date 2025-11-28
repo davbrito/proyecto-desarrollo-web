@@ -1,14 +1,14 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import * as bcrypt from "bcrypt";
-import { randomBytes } from "node:crypto";
 import { Repository } from "typeorm";
 import {
-  BCRYPT_SALT_ROUNDS,
   MAX_ACTIVE_REFRESH_SESSIONS,
   REFRESH_TOKEN_MAX_AGE_MS,
 } from "../../auth/auth.constants.js";
-import { RefreshToken } from "../entities/refresh-token.entity.js";
+import {
+  createHashedRefreshToken,
+  RefreshToken,
+} from "../entities/refresh-token.entity.js";
 
 @Injectable()
 export class RefreshTokenService {
@@ -18,7 +18,7 @@ export class RefreshTokenService {
   ) {}
 
   async create(userId: string, oldRefreshTokenId: string | null) {
-    const { token, hash } = await this.getHashedToken();
+    const { token, hash } = createHashedRefreshToken();
 
     const newTokenId = await this.saveAndTrimSessions({
       userId,
@@ -66,7 +66,7 @@ export class RefreshTokenService {
       });
     }
 
-    const isMatching = await stored.validateHash(hash);
+    const isMatching = stored.validateHash(hash);
     if (!isMatching) return null;
 
     return stored;
@@ -85,12 +85,6 @@ export class RefreshTokenService {
         throw error;
       }
     }
-  }
-
-  private async getHashedToken() {
-    const token = randomBytes(32).toString("hex");
-    const hash = await bcrypt.hash(token, BCRYPT_SALT_ROUNDS);
-    return { token, hash };
   }
 
   private async saveAndTrimSessions({

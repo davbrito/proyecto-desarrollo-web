@@ -1,4 +1,4 @@
-import * as bcrypt from "bcrypt";
+import * as crypto from "node:crypto";
 import {
   Column,
   CreateDateColumn,
@@ -31,7 +31,29 @@ export class RefreshToken {
   @Column({ type: "boolean", default: false })
   isRevoked: boolean;
 
-  validateHash(hash: string): Promise<boolean> {
-    return bcrypt.compare(hash, this.tokenHash);
+  validateHash(token: string) {
+    return validateRefreshToken(token, this.tokenHash);
   }
+}
+
+function hashRefreshToken(token: string) {
+  const hash = crypto.createHash("sha256").update(token).digest("hex");
+  return hash;
+}
+
+function validateRefreshToken(token: string, expectedHash: string): boolean {
+  const hash = hashRefreshToken(token);
+  const hashBuffer = Buffer.from(hash);
+  const tokenHashBuffer = Buffer.from(expectedHash);
+
+  if (hashBuffer.length !== tokenHashBuffer.length) return false;
+
+  return crypto.timingSafeEqual(hashBuffer, tokenHashBuffer);
+}
+
+export function createHashedRefreshToken() {
+  const algorithm = "sha256";
+  const token = crypto.randomBytes(32).toString("hex");
+  const hash = hashRefreshToken(token);
+  return { token, hash, algorithm };
 }
