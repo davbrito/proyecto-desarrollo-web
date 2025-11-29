@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
   Controller,
@@ -60,7 +61,7 @@ export class AuthController {
     @Body() signUpDto: SignUpDto,
     @Res({ passthrough: true }) res: ResponseType,
   ) {
-    return await this.authService.registerAdmin(signUpDto, res);
+    return await this.authService.registerAdmin(signUpDto);
   }
 
   @Post("refresh")
