@@ -62,7 +62,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @Post("register/admin")
   async registerAdmin(
-    @Body() signUpDto: SignUpDto,
+    @Body() signUpDto: RegisterDto,
     @Res({ passthrough: true }) res: ResponseType,
   ) {
     return await this.authService.registerAdmin(signUpDto);
