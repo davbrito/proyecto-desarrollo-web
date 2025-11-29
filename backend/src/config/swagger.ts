@@ -6,6 +6,7 @@ export function configureSwagger(app: INestApplication) {
     .setTitle("Sistema de Reservas de Laboratorio")
     .setDescription("API para la gestión de reservas de laboratorio")
     .setVersion("1.0")
+    .addBearerAuth()
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
