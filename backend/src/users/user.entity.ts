@@ -23,7 +23,7 @@ export interface TokenPayload {
 
 @Entity()
 export class User {
-  @PrimaryColumn("text", { default: () => `'${nanoid()}'` })
+  @PrimaryColumn({ type: "text" })
   id: string;
 
   @Column("text", { unique: true, nullable: false })
@@ -64,5 +64,12 @@ export class User {
       username: this.username,
       role: this.role,
     };
+  }
+
+  @BeforeInsert()
+  generateId() {
+    if (!this.id) {
+      this.id = nanoid();
+    }
   }
 }
