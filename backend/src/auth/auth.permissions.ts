@@ -9,6 +9,7 @@ export enum PermissionEnum {
   CREATE_USERS = "users:create",
   UPDATE_USERS = "users:update",
   DELETE_USERS = "users:delete",
+  CREATE_ADMIN = "users:create_admin",
 
   // Solicitudes
 }

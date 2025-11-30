@@ -17,7 +17,7 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function clientLoader(_: Route.LoaderArgs) {
-  const me = apiClient.get("api/auth/me").json();
+  const me = apiClient.get("auth/me").json();
   return { me };
 }
 

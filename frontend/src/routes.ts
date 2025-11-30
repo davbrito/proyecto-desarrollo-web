@@ -10,6 +10,10 @@ export default [
   layout("./routes/auth/layout.tsx", [
     route("login", "./routes/auth/login.tsx"),
     route("register", "./routes/auth/register.tsx"),
+    route(
+      "administrador/registrar-administrador",
+      "./routes/auth/admin/register.tsx",
+    ),
   ]),
 
   layout("./routes/private/layout.tsx", [

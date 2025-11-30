@@ -2,6 +2,7 @@ import ky, { HTTPError } from "ky";
 import { getAccessToken, refreshSession } from "./auth";
 
 export const apiClient = ky.create({
+  prefixUrl: "/api",
   credentials: "include",
   headers: {
     Accept: "application/json",

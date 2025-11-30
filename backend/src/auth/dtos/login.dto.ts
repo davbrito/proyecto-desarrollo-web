@@ -6,6 +6,7 @@ export class LoginDto {
   @IsString()
   username: string;
 
+  @ApiProperty()
   @IsString()
   password: string;
 }

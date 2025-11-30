@@ -34,6 +34,7 @@ interface AuthState {
   getAccessToken(): Promise<string | null>;
   login(values: LoginDto): Promise<AuthDto>;
   register(values: RegisterDto): Promise<void>;
+  registerAdministrator(values: RegisterDto): Promise<void>;
   logout(): Promise<void>;
 }
 
@@ -63,7 +64,7 @@ const authStore = createStore<AuthState>()(
 
         async login(values: LoginDto): Promise<AuthDto> {
           const data = await apiClient
-            .post("api/auth/login", { json: values, retry: 0 })
+            .post("auth/login", { json: values, retry: 0 })
             .json<AuthDto>();
 
           setSession(data);
@@ -73,17 +74,24 @@ const authStore = createStore<AuthState>()(
 
         async register(values: RegisterDto): Promise<void> {
           const data = await apiClient
-            .post("api/auth/register", {
+            .post("auth/register", {
               json: values,
               retry: 0,
             })
             .json<AuthDto>();
           setSession(data);
         },
-
+        async registerAdministrator(values: RegisterDto): Promise<void> {
+          await apiClient
+            .post("auth/register/admin", {
+              json: values,
+              retry: 0,
+            })
+            .json<AuthDto>();
+        },
         async logout() {
           setSession(null);
-          await apiClient.post("api/auth/logout", { retry: 0 }).catch(() => {});
+          await apiClient.post("auth/logout", { retry: 0 }).catch(() => {});
         },
       };
     },
@@ -131,12 +139,9 @@ export async function refreshSession(): Promise<AuthDto | null> {
   let refreshPromise = authStore.getState().refreshPromise;
   if (refreshPromise) return refreshPromise;
 
-  refreshPromise = fetch("api/auth/refresh", {
+  refreshPromise = fetch("/api/auth/refresh", {
     method: "POST",
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
   })
     .then(async (response) => {
       if (response.ok) {
@@ -156,4 +161,10 @@ export async function refreshSession(): Promise<AuthDto | null> {
   return refreshPromise;
 }
 
-export const { getAccessToken, login, logout, register } = authStore.getState();
+export const {
+  getAccessToken,
+  login,
+  logout,
+  register,
+  registerAdministrator,
+} = authStore.getState();
