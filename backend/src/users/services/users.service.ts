@@ -12,12 +12,11 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
-  }
-
   findOne(id: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ id });
+    return this.usersRepository.findOne({
+      where: { id },
+      cache: { id: `user:by_id:${id}`, milliseconds: 60_000 },
+    });
   }
 
   existsById(id: string): Promise<boolean> {
@@ -25,7 +24,10 @@ export class UsersService {
   }
 
   findOneByUsername(username: string) {
-    return this.usersRepository.findOneBy({ username: ILike(username) });
+    return this.usersRepository.findOne({
+      where: { username: ILike(username) },
+      cache: { id: `user:by_username:${username}`, milliseconds: 60_000 },
+    });
   }
 
   async create(
