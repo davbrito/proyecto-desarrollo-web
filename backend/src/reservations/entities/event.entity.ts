@@ -13,13 +13,13 @@ export class Event {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Reservation, { nullable: false })
+  @OneToOne(() => Reservation)
   @JoinColumn()
   reservation: Relation<Reservation>;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   reservationId: number;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   estimatedAssistants: number;
 }

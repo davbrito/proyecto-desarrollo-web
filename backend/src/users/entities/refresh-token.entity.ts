@@ -17,20 +17,20 @@ export class RefreshToken {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column("text", { nullable: false })
+  @Column("text")
   tokenHash: string;
 
-  @ManyToOne(() => User, { onDelete: "CASCADE", nullable: false })
+  @ManyToOne(() => User, { onDelete: "CASCADE" })
   @JoinColumn()
   user: Relation<User>;
 
-  @Column("text", { nullable: false })
+  @Column("text")
   userId: string;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column("timestamptz", { nullable: false })
+  @Column("timestamptz")
   expiresAt: Date;
 
   @Column({ type: "boolean", default: false })

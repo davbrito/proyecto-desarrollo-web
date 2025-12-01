@@ -17,41 +17,41 @@ export class Reservation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Laboratory, { nullable: false })
+  @ManyToOne(() => Laboratory)
   @JoinColumn()
   laboratory: Relation<Laboratory>;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   laboratoryId: number;
 
-  @ManyToOne(() => ReservationType, { nullable: false })
+  @ManyToOne(() => ReservationType)
   @JoinColumn()
   type: Relation<ReservationType>;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   typeId: number;
 
-  @ManyToOne(() => User, { nullable: false })
+  @ManyToOne(() => User)
   @JoinColumn()
   user: Relation<User>;
 
-  @Column("text", { nullable: false })
+  @Column("text")
   userId: string;
 
-  @ManyToOne(() => State, { nullable: false })
+  @ManyToOne(() => State)
   @JoinColumn()
   state: Relation<State>;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   stateId: number;
 
-  @Column("text", { nullable: false })
+  @Column("text")
   name: string;
 
-  @Column("date", { nullable: false })
+  @Column("date")
   startDate: Date;
 
-  @Column("date", { nullable: false })
+  @Column("date")
   endDate: Date;
 
   @Column("text", { nullable: true })

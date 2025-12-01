@@ -19,23 +19,20 @@ export class User {
   @PrimaryColumn({ type: "text" })
   id: string;
 
-  @Column("text", { unique: true, nullable: false })
+  @Column("text", { unique: true })
   username: string;
 
   @Column("text", { unique: true, nullable: true })
   email: string | null;
 
   @Exclude()
-  @Column("text", { nullable: false })
+  @Column("text")
   password: string;
 
   @Column("text")
   name: string;
 
-  @Column("text", {
-    default: RoleEnum.USER,
-    nullable: false,
-  })
+  @Column("text", { default: RoleEnum.USER })
   role: RoleEnum;
 
   @OneToMany(() => RefreshToken, (token) => token.user)

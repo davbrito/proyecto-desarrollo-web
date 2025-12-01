@@ -13,22 +13,22 @@ export class Occupation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Reservation, { nullable: false })
+  @ManyToOne(() => Reservation)
   @JoinColumn()
   reservation: Relation<Reservation>;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   reservationId: number;
 
-  @Column("date", { nullable: false })
+  @Column("date")
   date: Date;
 
-  @Column("time", { nullable: false })
+  @Column("time")
   startHour: string;
 
-  @Column("time", { nullable: false })
+  @Column("time")
   endHour: string;
 
-  @Column("boolean", { default: true, nullable: false })
+  @Column("boolean", { default: true })
   active: boolean;
 }

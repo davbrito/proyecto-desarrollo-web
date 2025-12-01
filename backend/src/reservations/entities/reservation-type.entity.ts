@@ -12,19 +12,19 @@ export class ReservationType {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column("text", { nullable: false })
+  @Column("text")
   name: string;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   minimalAnticipation: number;
 
-  @Column("float", { nullable: false })
+  @Column("float")
   blockDuration: number;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   priority: number;
 
-  @Column("boolean", { nullable: false })
+  @Column("boolean")
   needApproval: boolean;
 
   @OneToMany(() => Reservation, (reservation) => reservation.type)

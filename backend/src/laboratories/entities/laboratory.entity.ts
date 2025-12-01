@@ -12,13 +12,13 @@ export class Laboratory {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column("text", { nullable: false })
+  @Column("text")
   name: string;
 
-  @Column("int", { nullable: false })
+  @Column("int")
   number: number;
 
-  @Column("boolean", { default: true, nullable: false })
+  @Column("boolean", { default: true })
   active: boolean;
 
   @OneToMany(() => Reservation, (reservation) => reservation.laboratory)
