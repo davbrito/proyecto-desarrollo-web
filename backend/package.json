@@ -20,10 +20,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "migration:generate": "tsdown && node scripts/migrations.mts generate",
-    "migration:run": "tsdown && node scripts/migrations.mts run",
-    "migration:revert": "tsdown && node scripts/migrations.mts revert",
-    "migration:show": "tsdown && node scripts/migrations.mts show"
+    "migration:generate": "node scripts/migrations.mts generate",
+    "migration:run": "node scripts/migrations.mts run",
+    "migration:revert": "node scripts/migrations.mts revert",
+    "migration:show": "node scripts/migrations.mts show"
   },
   "dependencies": {
     "@inquirer/core": "^11.0.1",

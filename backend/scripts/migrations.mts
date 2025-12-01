@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-import * as prompts from "@inquirer/prompts";
 import { ExitPromptError } from "@inquirer/core";
+import * as prompts from "@inquirer/prompts";
 import { Command } from "commander";
 import { execa, ExecaError } from "execa";
 import path from "path";
+import * as tsdown from "tsdown";
 
 const program = new Command();
 const BACKEND_PATH = path.resolve(import.meta.dirname, "..");
@@ -12,6 +13,10 @@ const DATASOURCE_PATH = path.join(BACKEND_PATH, "dist/config/typeorm.mjs");
 const $ = execa({ stdio: "inherit" });
 
 async function runTypeorm(args: string[]) {
+  await tsdown.build({
+    report: false,
+    logLevel: "error",
+  });
   await $("typeorm", ["-d", DATASOURCE_PATH, ...args]);
 }
 
@@ -80,7 +85,7 @@ program.parseAsync(process.argv).catch((err) => {
   if (err instanceof ExitPromptError) {
     // User exited prompt
   } else if (err instanceof ExecaError) {
-    console.error("Error al ejecutar el comando:", err);
+    console.error(err.shortMessage);
   } else {
     console.error(err);
   }
