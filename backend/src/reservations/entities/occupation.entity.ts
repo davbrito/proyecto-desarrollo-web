@@ -13,11 +13,11 @@ export class Occupation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Reservation)
+  @ManyToOne(() => Reservation, { nullable: false })
   @JoinColumn()
   reservation: Relation<Reservation>;
 
-  @Column("int")
+  @Column("int", { nullable: false })
   reservationId: number;
 
   @Column("date", { nullable: false })
