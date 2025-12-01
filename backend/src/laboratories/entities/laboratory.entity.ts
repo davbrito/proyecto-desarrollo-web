@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  type Relation,
+} from "typeorm";
+import { Reservation } from "../../reservations/entities/reservation.entity.js";
 
 @Entity({ name: "laboratories" })
 export class Laboratory {
@@ -13,4 +20,7 @@ export class Laboratory {
 
   @Column("boolean", { default: true, nullable: false })
   active: boolean;
+
+  @OneToMany(() => Reservation, (reservation) => reservation.laboratory)
+  reservations: Relation<Reservation>[];
 }

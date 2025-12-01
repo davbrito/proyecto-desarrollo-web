@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   type Relation,
@@ -20,7 +21,11 @@ export class RefreshToken {
   tokenHash: string;
 
   @ManyToOne(() => User, { onDelete: "CASCADE", nullable: false })
+  @JoinColumn()
   user: Relation<User>;
+
+  @Column("text", { nullable: false })
+  userId: string;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -6,11 +6,13 @@ import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
-  Relation,
+  type Relation,
 } from "typeorm";
 import { RoleEnum } from "../../auth/auth.permissions.js";
 import type { TokenPayload } from "../../auth/token-payload.interface.js";
+import { Reservation } from "../../reservations/entities/reservation.entity.js";
 import { RefreshToken } from "./refresh-token.entity.js";
 
 @Entity()
@@ -39,6 +41,9 @@ export class User {
 
   @ManyToOne(() => RefreshToken, (token) => token.user)
   refreshTokens: Relation<RefreshToken>[];
+
+  @OneToMany(() => Reservation, (reservation) => reservation.user)
+  reservations: Relation<Reservation>[];
 
   @BeforeInsert()
   async hashPassword() {
