@@ -46,7 +46,7 @@ program
 
     // Build args for typeorm migration:generate
     // Assumes TypeORM config is set in backend/ormconfig or package scripts
-    await runTypeorm(["migration:generate", dest]);
+    await runTypeorm(["migration:generate", "--pretty", dest]);
   });
 
 program
@@ -64,7 +64,7 @@ program
   });
 
 program
-  .command("down")
+  .command("revert")
   .description("Revierte la última migración (pide confirmación)")
   .option("-y, --yes", "Skip confirmation")
   .action(async (options) => {
