@@ -5,7 +5,6 @@ import {
   BeforeInsert,
   Column,
   Entity,
-  ManyToOne,
   OneToMany,
   PrimaryColumn,
   type Relation,
@@ -39,7 +38,7 @@ export class User {
   })
   role: RoleEnum;
 
-  @ManyToOne(() => RefreshToken, (token) => token.user)
+  @OneToMany(() => RefreshToken, (token) => token.user)
   refreshTokens: Relation<RefreshToken>[];
 
   @OneToMany(() => Reservation, (reservation) => reservation.user)
