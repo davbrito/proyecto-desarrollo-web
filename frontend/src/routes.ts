@@ -19,5 +19,6 @@ export default [
   layout("./routes/private/layout.tsx", [
     index("./routes/private/index.tsx"),
     route("reservas/:id", "./routes/private/reservas/[id].tsx"),
+    route("dashboard", "./routes/private/dashboard.tsx"),
   ]),
 ] satisfies RouteConfig;
