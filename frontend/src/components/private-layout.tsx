@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -91,6 +91,21 @@ export default function PrivateLayout({
             </Fragment>
           ))}
         </SidebarContent>
+        <SidebarFooter>
+          <Form
+            method="post"
+            action="/logout"
+            id="logout-form"
+            className="contents"
+          >
+            <SidebarMenuItem>
+              <SidebarMenuButton tooltip="Cerrar sesión">
+                <LogOut />
+                <span>Cerrar sesión</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </Form>
+        </SidebarFooter>
 
         <SidebarRail />
       </Sidebar>
@@ -99,12 +114,6 @@ export default function PrivateLayout({
         <header className="flex h-14 items-center gap-3 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <span className="grow"></span>
-          <Form method="post" action="/logout" id="logout-form">
-            <Button variant="ghost" size="sm" type="submit" className="gap-2">
-              <LogOut className="size-4" />
-              <span>Cerrar sesión</span>
-            </Button>
-          </Form>
         </header>
 
         <div className="flex flex-1 flex-col p-4">{children}</div>
