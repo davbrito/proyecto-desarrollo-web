@@ -3,9 +3,9 @@ import { redirect } from "react-router";
 import type { Route } from "./+types/layout";
 
 const authMiddleware: Route.ClientMiddlewareFunction = async () => {
-  const redirectToLogin = seemsAuthenticated();
+  const isAuth = seemsAuthenticated();
 
-  if (!redirectToLogin) {
+  if (!isAuth) {
     throw redirect("/login");
   }
 
