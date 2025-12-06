@@ -1,10 +1,7 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import {
-  MAX_ACTIVE_REFRESH_SESSIONS,
-  REFRESH_TOKEN_MAX_AGE_MS,
-} from "../../auth/auth.constants.js";
+import { REFRESH_TOKEN_MAX_AGE_MS } from "../../auth/auth.constants.js";
 import {
   createHashedRefreshToken,
   RefreshToken,
@@ -115,28 +112,28 @@ export class RefreshTokenService {
     }
 
     // Keep at most MAX_ACTIVE_REFRESH_SESSIONS active (non-revoked, non-expired) tokens per user.
-    const offset = Math.max(MAX_ACTIVE_REFRESH_SESSIONS - 1, 0);
-    const deletedTokensQuery = this.refreshTokensRepository
-      .createQueryBuilder()
-      .delete()
-      .where(
-        `id IN (${this.refreshTokensRepository
-          .createQueryBuilder("tokens")
-          .subQuery()
-          .select("tokens.id")
-          .from(RefreshToken, "tokens")
-          .where("tokens.userId = :userId")
-          .andWhere("NOT tokens.isRevoked")
-          .andWhere("tokens.expiresAt > NOW()")
-          .orderBy("tokens.createdAt", "DESC")
-          .addOrderBy("tokens.id", "DESC")
-          .offset(offset)
-          .getQuery()})`,
-        { userId },
-      );
+    // const offset = Math.max(MAX_ACTIVE_REFRESH_SESSIONS - 1, 0);
+    // const deletedTokensQuery = this.refreshTokensRepository
+    //   .createQueryBuilder()
+    //   .delete()
+    //   .where(
+    //     `id IN (${this.refreshTokensRepository
+    //       .createQueryBuilder("tokens")
+    //       .subQuery()
+    //       .select("tokens.id")
+    //       .from(RefreshToken, "tokens")
+    //       .where("tokens.userId = :userId")
+    //       .andWhere("NOT tokens.isRevoked")
+    //       .andWhere("tokens.expiresAt > NOW()")
+    //       .orderBy("tokens.createdAt", "DESC")
+    //       .addOrderBy("tokens.id", "DESC")
+    //       .offset(offset)
+    //       .getQuery()})`,
+    //     { userId },
+    //   );
 
     const query = mainQb
-      .addCommonTableExpression(deletedTokensQuery, "deleted_tokens")
+      // .addCommonTableExpression(deletedTokensQuery, "deleted_tokens")
       .insert()
       .values({
         tokenHash,

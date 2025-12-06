@@ -106,7 +106,8 @@ export class AuthService {
   private setRefreshTokenCookie(token: string, res: Response): void {
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "strict",
       maxAge: REFRESH_TOKEN_MAX_AGE_MS,
     });

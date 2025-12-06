@@ -1,0 +1,114 @@
+import { Button } from "@/components/ui/button";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { Fragment } from "react";
+import { Form, NavLink } from "react-router";
+
+type NavItem = {
+  title: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+function SidebarNavItem({ item }: { item: NavItem }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton tooltip={item.title} asChild>
+        <NavLink to={item.href} end={item.href === "/"}>
+          <item.icon className="text-sidebar-foreground/70" />
+          <span>{item.title}</span>
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+export interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+export interface PrivateLayoutProps {
+  sections: NavSection[];
+  children: React.ReactNode;
+}
+
+export default function PrivateLayout({
+  sections,
+  children,
+}: PrivateLayoutProps) {
+  return (
+    <SidebarProvider>
+      <Sidebar collapsible="icon" variant="sidebar">
+        <SidebarHeader
+          className={cn(
+            "max-h-14 transition-all duration-300",
+            "group-data-[collapsible=icon]:h-0 group-data-[collapsible=icon]:py-0 group-data-[collapsible=icon]:opacity-0",
+          )}
+        >
+          <div className="text-sidebar-foreground w px-2 pt-2 text-xl font-semibold">
+            Menú
+          </div>
+        </SidebarHeader>
+
+        <SidebarContent>
+          {sections.map((section, index) => (
+            <Fragment key={section.label}>
+              <SidebarGroup>
+                <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {section.items.map((item) => (
+                      <SidebarNavItem key={item.title} item={item} />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
+              {index < sections.length - 1 ? (
+                <SidebarSeparator
+                  orientation="horizontal"
+                  className="w-auto!"
+                />
+              ) : null}
+            </Fragment>
+          ))}
+        </SidebarContent>
+
+        <SidebarRail />
+      </Sidebar>
+
+      <SidebarInset>
+        <header className="flex h-14 items-center gap-3 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <span className="grow"></span>
+          <Form method="post" action="/logout" id="logout-form">
+            <Button variant="ghost" size="sm" type="submit" className="gap-2">
+              <LogOut className="size-4" />
+              <span>Cerrar sesión</span>
+            </Button>
+          </Form>
+        </header>
+
+        <div className="flex flex-1 flex-col p-4">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
