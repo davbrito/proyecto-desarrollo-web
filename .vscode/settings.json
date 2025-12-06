@@ -17,5 +17,6 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "SQL-Formatter-VSCode.dialect": "postgresql",
-  "tailwindCSS.classFunctions": ["cn", "cva", "clsx"]
+  "tailwindCSS.classFunctions": ["cn", "cva", "clsx"],
+  "typescript.preferences.autoImportFileExcludePatterns": ["radix-ui"]
 }
