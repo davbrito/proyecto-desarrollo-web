@@ -120,6 +120,10 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    @apply scroll-smooth font-sans text-[14px] antialiased md:text-[16px];
+  }
+
   body {
     @apply bg-background text-foreground;
   }
