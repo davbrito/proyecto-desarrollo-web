@@ -9,6 +9,7 @@ import { DatabaseModule } from "./database/database.module.js";
 import { HttpExceptionFilter } from "./http-exception.filter.js";
 import { ReservationsModule } from "./reservations/reservations.module.js";
 import { UsersModule } from "./users/users.module.js";
+import { AppController } from "./app.controller.js";
 
 @Module({
   imports: [
@@ -33,5 +34,6 @@ import { UsersModule } from "./users/users.module.js";
       useClass: HttpExceptionFilter,
     },
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
