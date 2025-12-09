@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { Button } from "./button";
+import { Button } from "../ui/button";
 import CalendarReservation from "./calendar-reservation";
-import { Input } from "./input";
-import { Textarea } from "./textarea";
-import { Label } from "./label";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./select";
+} from "../ui/select";
 
 function ModalReservasion() {
   const [date, setDate] = useState<string>("Selecciona un dia");

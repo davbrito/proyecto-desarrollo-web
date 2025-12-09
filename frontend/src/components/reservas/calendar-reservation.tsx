@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useEffect, useEffectEvent, useState } from "react";
-import { Calendar } from "./calendar";
+import { Calendar } from "../ui/calendar";
 
 interface Props {
   obtainDate: (selectedDate: string) => void;
@@ -45,7 +45,7 @@ function CalendarReservation({ obtainDate }: Props) {
         // estilos para dias modificados
         booked: cn(
           "rounded-lg border opacity-100! *:opacity-100!",
-          "after:absolute after:top-0 after:right-0 after:translate-x-1/4 after:-translate-y-1/4 after:size-2 after:rounded-full after:bg-[#FF600B] after:content-['']",
+          "after:absolute after:top-0 after:right-0 after:size-2 after:translate-x-1/4 after:-translate-y-1/4 after:rounded-full after:bg-[#FF600B] after:content-['']",
         ),
       }}
       showOutsideDays

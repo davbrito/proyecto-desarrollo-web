@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import type { Route } from "./+types";
-import ModalReservasion from "@/components/ui/modal-reservation";
+import ModalReservasion from "@/components/reservas/modal-reservation";
 
 const UNAVAILABLE_SLOTS: Record<string, string[]> = {
   // Example: 2025-12-03 has some unavailable hours
