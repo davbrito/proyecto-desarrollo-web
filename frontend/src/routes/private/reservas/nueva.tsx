@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import type { Route } from "./+types";
+import ModalReservasion from "@/components/ui/modal-reservation";
 
 const UNAVAILABLE_SLOTS: Record<string, string[]> = {
   // Example: 2025-12-03 has some unavailable hours
@@ -33,7 +34,9 @@ function toIso(date?: Date | null) {
   return format(date, "yyyy-MM-dd");
 }
 
-export default function NuevaReserva(_: Route.ComponentProps) {
+export default ModalReservasion;
+
+function NuevaReservaOld(_: Route.ComponentProps) {
   const [selected, setSelected] = useState<Date | undefined>(new Date());
   const [hour, setHour] = useState("06");
   const [minute, setMinute] = useState("30");
