@@ -8,7 +8,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
-import { getInputProps, type SubmissionResult } from "@conform-to/react";
+import {
+  getFormProps,
+  getInputProps,
+  type SubmissionResult,
+} from "@conform-to/react";
 import { Form, Link } from "react-router";
 import { useRegisterForm } from "./form";
 
@@ -36,13 +40,7 @@ export default function RegisterForm({
       title={title}
       subtitle={subtitle}
       content={
-        <Form
-          noValidate
-          method="post"
-          id={form.id}
-          onSubmit={form.onSubmit}
-          className="md:min-w-lg"
-        >
+        <Form {...getFormProps(form)} method="post" className="md:min-w-lg">
           <FieldGroup className="md:gap-3">
             <Field>
               <FieldLabel htmlFor={fields.username.id}>
