@@ -16,6 +16,8 @@ export default [
     ),
   ]),
 
+  route("menu", "./prueba/menu.tsx"),
+
   layout("./routes/private/layout.tsx", [
     index("./routes/private/index.tsx"),
     route("reservas", "./routes/private/reservas/index.tsx"),

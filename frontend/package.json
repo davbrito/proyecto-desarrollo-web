@@ -13,6 +13,7 @@
   "dependencies": {
     "@conform-to/react": "^1.14.1",
     "@conform-to/zod": "^1.14.1",
+    "@heroicons/react": "^2.2.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@react-router/fs-routes": "^7.10.1",
     "@react-router/node": "^7.10.1",
@@ -28,6 +29,7 @@
     "ky": "^1.14.0",
     "lodash-es": "^4.17.21",
     "lucide-react": "^0.556.0",
+    "pnpm": "^10.25.0",
     "radix-ui": "latest",
     "react": "^19.2.1",
     "react-day-picker": "^9.11.3",
