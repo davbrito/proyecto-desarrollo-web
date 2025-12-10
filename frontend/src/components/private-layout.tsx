@@ -15,11 +15,14 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { Fragment } from "react";
 import { Form, NavLink } from "react-router";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 type NavItem = {
   title: string;
@@ -54,6 +57,7 @@ export default function PrivateLayout({
   sections,
   children,
 }: PrivateLayoutProps) {
+  const { user } = useUser();
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon" variant="sidebar">
@@ -114,10 +118,29 @@ export default function PrivateLayout({
         <header className="flex h-14 items-center gap-3 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <span className="grow"></span>
+
+          {user && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Avatar className="md:size-10">
+                  <AvatarFallback className="bg-slate-900 font-bold text-white">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent collisionPadding={6}>{user.name}</TooltipContent>
+            </Tooltip>
+          )}
         </header>
 
         <div className="flex flex-1 flex-col">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
+}
+
+function getInitials(name: string) {
+  const regex = /\b\w/g;
+  const initials = name.match(regex)?.join("").toUpperCase() || "";
+  return initials.slice(0, 2);
 }

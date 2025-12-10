@@ -1,7 +1,8 @@
+import ky from "ky";
 import { persist } from "zustand/middleware";
+import { useStore } from "zustand/react";
 import { createStore } from "zustand/vanilla";
 import { apiClient } from "./api";
-import ky from "ky";
 
 interface UserData {
   id: string;
@@ -169,3 +170,10 @@ export const {
   register,
   registerAdministrator,
 } = authStore.getState();
+
+export function useUser() {
+  const user = useStore(authStore, (state) => state.user);
+  const isRefreshing = useStore(authStore, (state) => !!state.refreshPromise);
+
+  return { user, isLoading: !user && isRefreshing };
+}

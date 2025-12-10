@@ -84,7 +84,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
       : reservas.filter((r) => r.tipo === activeTab);
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -100,7 +100,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-white">
+          <Card className="border-orange-200 bg-linear-to-br from-orange-50 to-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-700">
                 Pendientes
@@ -114,7 +114,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-green-200 bg-gradient-to-br from-green-50 to-white">
+          <Card className="border-green-200 bg-linear-to-br from-green-50 to-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-700">
                 Aprobadas
@@ -128,7 +128,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-red-200 bg-gradient-to-br from-red-50 to-white">
+          <Card className="border-red-200 bg-linear-to-br from-red-50 to-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-700">
                 Rechazadas
@@ -142,7 +142,7 @@ export default function DashboardPage({ loaderData }: Route.ComponentProps) {
             </CardContent>
           </Card>
 
-          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+          <Card className="border-blue-200 bg-linear-to-br from-blue-50 to-white">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-700">
                 Total
