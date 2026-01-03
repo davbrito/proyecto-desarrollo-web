@@ -1,0 +1,21 @@
+meta {
+  name: Crear Tipo de Reserva
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/reserve-types
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Clase Regular",
+    "minimalAnticipation": 24,
+    "blockDuration": 1.5,
+    "priority": 10,
+    "needsApproval": false
+  }
+}
