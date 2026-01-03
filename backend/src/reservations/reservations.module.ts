@@ -17,6 +17,9 @@ import { StatesService } from "./services/states.service.js";
 import { ReserveTypesService } from "./services/reserve-types.service.js";
 import { ReserveTypesController } from "./reserve-types.controller.js";
 
+import { OcupationsService } from "./services/ocupations.service.js";
+import { OcupationsController } from "./ocupations.controller.js";
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -32,8 +35,19 @@ import { ReserveTypesController } from "./reserve-types.controller.js";
     ReservationsController,
     StatesController,
     ReserveTypesController,
+    OcupationsController,
   ],
-  providers: [ReservationsService, StatesService, ReserveTypesService],
-  exports: [ReservationsService, StatesService, ReserveTypesService],
+  providers: [
+    ReservationsService,
+    StatesService,
+    ReserveTypesService,
+    OcupationsService,
+  ],
+  exports: [
+    ReservationsService,
+    StatesService,
+    ReserveTypesService,
+    OcupationsService,
+  ],
 })
 export class ReservationsModule {}
