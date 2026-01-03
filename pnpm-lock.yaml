@@ -231,6 +231,9 @@ importers:
       tsdown:
         specifier: ^0.16.8
         version: 0.16.8(synckit@0.11.11)(typescript@5.9.3)
+      tsx:
+        specifier: ^4.20.6
+        version: 4.20.6
       typescript:
         specifier: 'catalog:'
         version: 5.9.3

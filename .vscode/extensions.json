@@ -1,9 +1,0 @@
-{
-  "recommendations": [
-    "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
-    "bradlc.vscode-tailwindcss",
-    "nicoespeon.abracadabra",
-    "ms-ossdata.vscode-pgsql"
-  ]
-}
