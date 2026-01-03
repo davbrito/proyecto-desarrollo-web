@@ -23,6 +23,9 @@ import { OcupationsController } from "./ocupations.controller.js";
 import { ClassesService } from "./services/classes.service.js";
 import { ClassesController } from "./classes.controller.js";
 
+import { EventsService } from "./services/events.service.js";
+import { EventsController } from "./events.controller.js";
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -40,6 +43,7 @@ import { ClassesController } from "./classes.controller.js";
     ReserveTypesController,
     OcupationsController,
     ClassesController,
+    EventsController,
   ],
   providers: [
     ReservationsService,
@@ -47,6 +51,7 @@ import { ClassesController } from "./classes.controller.js";
     ReserveTypesService,
     OcupationsService,
     ClassesService,
+    EventsService,
   ],
   exports: [
     ReservationsService,
@@ -54,6 +59,7 @@ import { ClassesController } from "./classes.controller.js";
     ReserveTypesService,
     OcupationsService,
     ClassesService,
+    EventsService,
   ],
 })
 export class ReservationsModule {}
