@@ -15,6 +15,9 @@
     "types": ["node", "jest"],
     "sourceMap": true,
     "outDir": "./dist",
+    "paths": {
+      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"],
+    },
     // "baseUrl": "./",
     "skipLibCheck": true,
     "strictNullChecks": true,
