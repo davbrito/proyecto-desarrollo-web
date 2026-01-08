@@ -2,9 +2,9 @@
   "name": "@uneg-lab/api-types",
   "private": true,
   "version": "1.0.0",
-  "description": "",
+  "type": "module",
   "exports": {
-    "./*": "./lib/*"
+    "./*": "./lib/*.ts"
   },
   "dependencies": {
     "zod": "catalog:"
