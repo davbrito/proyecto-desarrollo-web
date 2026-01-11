@@ -1,4 +1,4 @@
-import { RegisterSchema } from "@uneg-lab/api-types/auth.ts";
+import { RegisterSchema } from "@uneg-lab/api-types/auth";
 import * as z from "zod";
 
 export const registerFormSchema = RegisterSchema.extend({

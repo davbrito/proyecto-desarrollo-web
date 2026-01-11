@@ -1,10 +1,10 @@
 import {
-  AuthResponseSchema,
   type AuthResponse,
+  AuthResponseSchema,
   type LoginType,
   type RegisterType,
   type UserType,
-} from "@uneg-lab/api-types/auth.js";
+} from "@uneg-lab/api-types/auth";
 import ky from "ky";
 import { persist } from "zustand/middleware";
 import { useStore } from "zustand/react";
@@ -136,7 +136,7 @@ export async function refreshSession(): Promise<AuthResponse | null> {
     credentials: "include",
   })
     .then((response) =>
-      response.ok ? response.json().then(AuthResponseSchema.parse) : null,
+      response.ok ? response.json().then(AuthResponseSchema.parse) : null
     )
     .catch(() => null)
     .then(async (data) => {

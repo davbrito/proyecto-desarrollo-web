@@ -11,7 +11,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { setErrorFromServer } from "@/lib/api";
 import { login } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoginSchema, type LoginType } from "@uneg-lab/api-types/auth.js";
+import { LoginSchema, type LoginType } from "@uneg-lab/api-types/auth";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";

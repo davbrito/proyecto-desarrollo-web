@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { apiClient } from "@/lib/api";
-import { ReservationSchema } from "@uneg-lab/api-types/reservation.js";
+import { ReservationSchema } from "@uneg-lab/api-types/reservation";
 import { Plus } from "lucide-react";
 import { Suspense, useState } from "react";
 import { Await, Link } from "react-router";
