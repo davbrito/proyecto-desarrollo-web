@@ -10,7 +10,9 @@ import {
 } from "@nestjs/common";
 import { LaboratoriesService } from "./laboratories.service";
 import { CreateLaboratoryDto, UpdateLaboratoryDto } from "./laboratory.dto";
+import { Auth } from "../auth/decorators/auth.decorator";
 
+@Auth()
 @Controller("laboratories")
 export class LaboratoriesController {
   constructor(private readonly laboratoriesService: LaboratoriesService) {}

@@ -10,7 +10,9 @@ import {
 } from "@nestjs/common";
 import { StatesService } from "./services/states.service.js";
 import { CreateStateDto, UpdateStateDto } from "./dto/state.dto.js";
+import { Auth } from "../auth/decorators/auth.decorator.js";
 
+@Auth()
 @Controller("states")
 export class StatesController {
   constructor(private readonly statesService: StatesService) {}

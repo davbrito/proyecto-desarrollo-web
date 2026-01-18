@@ -11,7 +11,9 @@ import {
 } from "@nestjs/common";
 import { OcupationsService } from "./services/ocupations.service.js";
 import { CreateOcupationDto, UpdateOcupationDto } from "./dto/ocupation.dto.js";
+import { Auth } from "../auth/decorators/auth.decorator.js";
 
+@Auth()
 @Controller("ocupations")
 export class OcupationsController {
   constructor(private readonly service: OcupationsService) {}

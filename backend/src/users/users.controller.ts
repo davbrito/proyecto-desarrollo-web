@@ -6,9 +6,11 @@ import {
   Param,
   Post,
 } from "@nestjs/common";
+import { Auth } from "../auth/decorators/auth.decorator.js";
 import { RegisterDto } from "../auth/dtos/register.dto.js";
 import { UsersService } from "./services/users.service.js";
 
+@Auth()
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

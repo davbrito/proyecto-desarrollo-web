@@ -13,7 +13,9 @@ import {
   CreateReservationDto,
   UpdateReservationDto,
 } from "./reservation.dto.js";
+import { Auth } from "../auth/decorators/auth.decorator.js";
 
+@Auth()
 @Controller("reservations")
 export class ReservationsController {
   constructor(private readonly reservationsService: ReservationsService) {}

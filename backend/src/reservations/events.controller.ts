@@ -10,7 +10,9 @@ import {
 } from "@nestjs/common";
 import { EventsService } from "./services/events.service.js";
 import { CreateEventDto, UpdateEventDto } from "./dto/event.dto.js";
+import { Auth } from "../auth/decorators/auth.decorator.js";
 
+@Auth()
 @Controller("events")
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}

@@ -13,7 +13,9 @@ import {
   CreateReserveTypeDto,
   UpdateReserveTypeDto,
 } from "./dto/reserve-type.dto.js";
+import { Auth } from "../auth/decorators/auth.decorator.js";
 
+@Auth()
 @Controller("reserve-types")
 export class ReserveTypesController {
   constructor(private readonly service: ReserveTypesService) {}

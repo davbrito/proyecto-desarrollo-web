@@ -10,7 +10,9 @@ import {
 } from "@nestjs/common";
 import { ClassesService } from "./services/classes.service.js";
 import { CreateClassDto, UpdateClassDto } from "./dto/class.dto.js";
+import { Auth } from "../auth/decorators/auth.decorator.js";
 
+@Auth()
 @Controller("classes")
 export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
