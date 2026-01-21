@@ -1,5 +1,7 @@
 import "./styles/global.css";
 
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
   isRouteErrorResponse,
   Links,
@@ -12,6 +14,7 @@ import { z, ZodError } from "zod";
 import type { Route } from "./+types/root";
 import { VercelAnalytics } from "./components/analytics";
 import { Skeleton } from "./components/ui/skeleton";
+import { queryClient } from "./lib/query-client";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,7 +38,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Outlet />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
