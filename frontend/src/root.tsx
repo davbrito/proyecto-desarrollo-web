@@ -8,7 +8,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import { z, ZodError } from "zod/v4";
+import { z, ZodError } from "zod";
 import type { Route } from "./+types/root";
 import { VercelAnalytics } from "./components/analytics";
 import { Skeleton } from "./components/ui/skeleton";
