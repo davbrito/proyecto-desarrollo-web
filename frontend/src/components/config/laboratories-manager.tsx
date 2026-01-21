@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogClose,
@@ -12,11 +11,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { apiClient, extractErrorMessages } from "@/lib/api";
+import { Switch } from "@/components/ui/switch";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { extractErrorMessages } from "@/lib/api";
+import { laboratoriesService, type Laboratory } from "@/services/laboratories";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { Edit2, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useRevalidator } from "react-router";
-import { z } from "zod";
 import {
   Drawer,
   DrawerClose,
@@ -26,16 +31,6 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "../ui/drawer";
-import { useMediaQuery } from "@/hooks/use-media-query";
-
-export const LaboratorySchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  number: z.number(),
-  active: z.boolean(),
-});
-
-export type Laboratory = z.infer<typeof LaboratorySchema>;
 
 type LaboratoryDraft = {
   name: string;
@@ -43,20 +38,21 @@ type LaboratoryDraft = {
   active: boolean;
 };
 
-export function LaboratoriesManager({
-  laboratories,
-}: {
-  laboratories: Laboratory[];
-}) {
+export function LaboratoriesManager() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  const revalidator = useRevalidator();
+  const queryClient = useQueryClient();
+
+  const { data: labs } = useSuspenseQuery({
+    queryKey: ["laboratories"],
+    queryFn: () => laboratoriesService.getAll(),
+  });
+
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
   const [selectedId, setSelectedId] = useState<number | null>(
-    laboratories[0]?.id ?? null,
+    labs[0]?.id ?? null,
   );
   const [draft, setDraft] = useState<LaboratoryDraft | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -67,18 +63,15 @@ export function LaboratoriesManager({
     active: true,
   });
   const [createError, setCreateError] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+
+  if (!selectedId && labs.length > 0) {
+    setSelectedId(labs[0].id);
+  }
 
   useEffect(() => {
-    if (!selectedId && laboratories.length > 0) {
-      setSelectedId(laboratories[0].id);
-    }
-  }, [laboratories, selectedId]);
-
-  useEffect(() => {
-    const selected = laboratories.find((lab) => lab.id === selectedId) ?? null;
+    const selected =
+      labs.find((lab: Laboratory) => lab.id === selectedId) ?? null;
     if (selected) {
       setDraft({
         name: selected.name,
@@ -87,11 +80,11 @@ export function LaboratoriesManager({
       });
       setErrorMessage(null);
     }
-  }, [laboratories, selectedId]);
+  }, [labs, selectedId]);
 
   const filteredLabs = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    return laboratories.filter((lab) => {
+    return labs.filter((lab: Laboratory) => {
       const matchesQuery = normalized
         ? `${lab.name} ${lab.number}`.toLowerCase().includes(normalized)
         : true;
@@ -101,9 +94,10 @@ export function LaboratoriesManager({
         (filter === "inactive" && !lab.active);
       return matchesQuery && matchesFilter;
     });
-  }, [laboratories, query, filter]);
+  }, [labs, query, filter]);
 
-  const selectedLab = laboratories.find((lab) => lab.id === selectedId) ?? null;
+  const selectedLab =
+    labs.find((lab: Laboratory) => lab.id === selectedId) ?? null;
   const isDirty =
     !!selectedLab &&
     !!draft &&
@@ -111,35 +105,73 @@ export function LaboratoriesManager({
       Number(draft.number) !== selectedLab.number ||
       draft.active !== selectedLab.active);
 
+  const updateMutation = useMutation({
+    mutationFn: async (payload: { id: number; data: Partial<Laboratory> }) => {
+      return laboratoriesService.update(payload.id, payload.data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["laboratories"] });
+      setEditOpen(false);
+    },
+    onError: async (error) => {
+      const [message] = await extractErrorMessages(error);
+      setErrorMessage(message ?? "No se pudo guardar los cambios.");
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: LaboratoryDraft) => {
+      return laboratoriesService.create({
+        name: data.name.trim(),
+        number: Number(data.number),
+        active: data.active,
+      });
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ["laboratories"] });
+      setSelectedId(created.id);
+      setEditOpen(true);
+      setCreateOpen(false);
+      resetCreateDraft();
+    },
+    onError: async (error) => {
+      const [message] = await extractErrorMessages(error);
+      setCreateError(message ?? "No se pudo crear el laboratorio.");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => laboratoriesService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["laboratories"] });
+      setDeleteOpen(false);
+      setEditOpen(false);
+      setSelectedId(null);
+    },
+    onError: async (error) => {
+      const [message] = await extractErrorMessages(error);
+      setDeleteError(message ?? "No se pudo eliminar el laboratorio.");
+    },
+  });
+
   const canSave =
     !!draft &&
     draft.name.trim().length >= 3 &&
     Number.isFinite(Number(draft.number)) &&
     Number(draft.number) > 0 &&
     isDirty &&
-    !isSaving;
+    !updateMutation.isPending;
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!selectedLab || !draft) return;
-    setIsSaving(true);
-    setErrorMessage(null);
-    try {
-      const payload = {
+    updateMutation.mutate({
+      id: selectedLab.id,
+      data: {
         name: draft.name.trim(),
         number: Number(draft.number),
         active: draft.active,
-      };
-      await apiClient
-        .patch(`laboratories/${selectedLab.id}`, { json: payload })
-        .json()
-        .then(LaboratorySchema.parse);
-      revalidator.revalidate();
-    } catch (error) {
-      const [message] = await extractErrorMessages(error);
-      setErrorMessage(message ?? "No se pudo guardar los cambios.");
-    } finally {
-      setIsSaving(false);
-    }
+      },
+    });
   };
 
   const handleCancel = () => {
@@ -152,22 +184,9 @@ export function LaboratoriesManager({
     setErrorMessage(null);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!selectedLab) return;
-    setIsDeleting(true);
-    setDeleteError(null);
-    try {
-      await apiClient.delete(`laboratories/${selectedLab.id}`).json();
-      setDeleteOpen(false);
-      setEditOpen(false);
-      setSelectedId(null);
-      revalidator.revalidate();
-    } catch (error) {
-      const [message] = await extractErrorMessages(error);
-      setDeleteError(message ?? "No se pudo eliminar el laboratorio.");
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteMutation.mutate(selectedLab.id);
   };
 
   const resetCreateDraft = () => {
@@ -179,33 +198,11 @@ export function LaboratoriesManager({
     createDraft.name.trim().length >= 3 &&
     Number.isFinite(Number(createDraft.number)) &&
     Number(createDraft.number) > 0 &&
-    !isCreating;
+    !createMutation.isPending;
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (!canCreate) return;
-    setIsCreating(true);
-    setCreateError(null);
-    try {
-      const payload = {
-        name: createDraft.name.trim(),
-        number: Number(createDraft.number),
-        active: createDraft.active,
-      };
-      const created = await apiClient
-        .post("laboratories", { json: payload })
-        .json()
-        .then(LaboratorySchema.parse);
-      revalidator.revalidate();
-      setSelectedId(created.id);
-      setEditOpen(true);
-      setCreateOpen(false);
-      resetCreateDraft();
-    } catch (error) {
-      const [message] = await extractErrorMessages(error);
-      setCreateError(message ?? "No se pudo crear el laboratorio.");
-    } finally {
-      setIsCreating(false);
-    }
+    createMutation.mutate(createDraft);
   };
 
   return (
@@ -318,7 +315,9 @@ export function LaboratoriesManager({
                     onClick={handleCreate}
                     disabled={!canCreate}
                   >
-                    {isCreating ? "Creando..." : "Crear Laboratorio"}
+                    {createMutation.isPending
+                      ? "Creando..."
+                      : "Crear Laboratorio"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -440,8 +439,7 @@ export function LaboratoriesManager({
 
           <div className="mt-8 flex items-center justify-center">
             <p className="text-sm text-slate-500">
-              Mostrando {filteredLabs.length} de {laboratories.length}{" "}
-              laboratorios
+              Mostrando {filteredLabs.length} de {labs.length} laboratorios
             </p>
           </div>
         </div>
@@ -543,7 +541,7 @@ export function LaboratoriesManager({
               <Button
                 variant="destructive"
                 type="button"
-                disabled={!selectedLab || isDeleting}
+                disabled={!selectedLab || deleteMutation.isPending}
                 onClick={() => setDeleteOpen(true)}
               >
                 Eliminar
@@ -553,13 +551,13 @@ export function LaboratoriesManager({
                   variant="outline"
                   type="button"
                   onClick={handleCancel}
-                  disabled={isSaving}
+                  disabled={updateMutation.isPending}
                 >
                   Cancelar
                 </Button>
               </DrawerClose>
               <Button type="button" onClick={handleSave} disabled={!canSave}>
-                {isSaving ? "Guardando..." : "Guardar Cambios"}
+                {updateMutation.isPending ? "Guardando..." : "Guardar Cambios"}
               </Button>
             </DrawerFooter>
           </DrawerContent>
@@ -594,9 +592,9 @@ export function LaboratoriesManager({
               variant="destructive"
               type="button"
               onClick={handleDelete}
-              disabled={!selectedLab || isDeleting}
+              disabled={!selectedLab || deleteMutation.isPending}
             >
-              {isDeleting ? "Eliminando..." : "Eliminar"}
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
             </Button>
           </DialogFooter>
         </DialogContent>

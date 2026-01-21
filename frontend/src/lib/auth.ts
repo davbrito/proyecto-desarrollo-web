@@ -136,7 +136,7 @@ export async function refreshSession(): Promise<AuthResponse | null> {
     credentials: "include",
   })
     .then((response) =>
-      response.ok ? response.json().then(AuthResponseSchema.parse) : null
+      response.ok ? response.json().then(AuthResponseSchema.parse) : null,
     )
     .catch(() => null)
     .then(async (data) => {
