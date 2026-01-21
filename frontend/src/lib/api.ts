@@ -20,27 +20,30 @@ export const apiClient = ky.create({
     ],
     afterResponse: [
       async (request, _options, response, state) => {
-        if (response.status === 401) {
-          let token;
-
-          if (state.retryCount > 1) {
-            console.warn("Max retries reached. Redirecting to login.");
-          } else {
-            token = await refreshSession().then((res) => res?.accessToken);
-          }
-
-          if (token) {
-            const headers = new Headers(request.headers);
-            headers.set("Authorization", `Bearer ${token}`);
-
-            return ky.retry({
-              request: new Request(request, { headers }),
-              code: "TOKEN_REFRESHED",
-            });
-          } else {
-            window.location.href = "/login";
-          }
+        if (response.status !== 401) {
+          return;
         }
+
+        let token;
+
+        if (state.retryCount > 1) {
+          console.warn("Max retries reached. Redirecting to login.");
+        } else {
+          token = await refreshSession().then((res) => res?.accessToken);
+        }
+
+        if (!token) {
+          window.location.href = "/login";
+          return;
+        }
+
+        const headers = new Headers(request.headers);
+        headers.set("Authorization", `Bearer ${token}`);
+
+        return ky.retry({
+          request: new Request(request, { headers }),
+          code: "TOKEN_REFRESHED",
+        });
       },
     ],
   },
