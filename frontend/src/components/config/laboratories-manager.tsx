@@ -179,6 +179,7 @@ export function LaboratoriesManager() {
         </div>
 
         <EditLaboratoryDrawer
+          key={selectedLab?.id ?? "no-lab"}
           laboratory={selectedLab}
           open={editOpen}
           onOpenChange={setEditOpen}
