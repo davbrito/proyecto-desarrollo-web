@@ -13,14 +13,24 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import CalendarReservation from "../calendar-reservation";
-import { reservationFormAction, reservationFormSchema } from "./schema";
+import { reservationFormAction, reservationFormSchema } from './schema';
 import { setErrorFromServer } from "@/lib/api";
+import postReservation from "./PostReservation";
 
 export interface ModalReservasionProps {
   availableHours: string[];
+  availableLaboratory: { id: number; name: string; active: boolean, number: number }[];
+  stateTypeEvent: {
+    id: any;
+    name: string;
+    minimalAnticipation: number;
+    blockDuration: number;
+    priority: number;
+    needsApproval: boolean;
+  }[];
 }
 
-function ReservationForm({ availableHours }: ModalReservasionProps) {
+function ReservationForm({ availableHours, availableLaboratory, stateTypeEvent }: ModalReservasionProps) {
   const navigate = useNavigate();
   const formId = useId();
   const form = useForm({
@@ -35,11 +45,35 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
     <form
       noValidate
       onSubmit={handleSubmit(async (data) => {
+
+        const authDataRaw = localStorage.getItem("auth");
+
+
+        const authData = JSON.parse(authDataRaw as string);
+        const userId = authData.state.user.id;
+
+
+
         try {
-          await reservationFormAction(data);
-          navigate("/reservas");
+          console.log(data)
+
+          const sendData = {
+            userId: userId,
+            name: data.description,
+            startDate: data.date.toISOString().split('T')[0],
+            endDate: null,
+            rrule: null,
+            defaultStartTime: data.start_time + ":00",
+            defaultEndTime: data.end_time + ":00",
+            laboratoryId: Number(data.laboratorio),
+            stateId: 1,
+            typeId: Number(data.type_event)
+          }
+          await postReservation(sendData);
+          // navigate("/reservas");
         } catch (error) {
           setErrorFromServer(setError, error);
+          console.log(error)
           return;
         }
       })}
@@ -88,17 +122,65 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
         </div>
 
         <div className="flex flex-col items-stretch gap-4">
-          <div className="w-96 self-center rounded-lg border bg-zinc-50 py-3 text-center shadow-md">
+          <div className="w-96 self-center rounded-lg border bg-zinc-50 p-5 text-center shadow-md">
             <h2 className="text-xl font-semibold">
               {dateValue
-                ? formatDate(dateValue, "d 'de' MMMM yyyy")
+                ? "Seleccionaste " + formatDate(dateValue, "d 'de' MMMM yyyy")
                 : "Selecciona una fecha"}
             </h2>
-            <p className="text-red-800">Horas de Reservas no disponibles</p>
-            <span className="text-red-800"> 9am - 11 am - 1pm</span>
+            {/* <p className="text-red-800">Horas de Reservas no disponibles</p>
+            <span className="text-red-800"> 9am - 11 am - 1pm</span> */}
           </div>
 
           <FieldGroup>
+            <Field>
+
+              <FieldLabel htmlFor="laboratorio-selection">
+                Selecciona un laboratorio
+              </FieldLabel>
+
+              <select
+                id="laboratorio-selection"
+                {...register("laboratorio")}
+                className="w-full p-2 border rounded-md"
+
+              >
+                <option value="">Selecciona</option>
+                {availableLaboratory.map((laboratory: any) => (
+                  laboratory.active === true && (
+                    <option key={laboratory.id} value={laboratory.id}>
+                      {laboratory.name}
+                    </option>
+                  )
+                ))}
+              </select>
+
+              <FieldError>{errors.laboratorio?.message}</FieldError>
+            </Field>
+
+
+            <Field>
+              <FieldLabel htmlFor="tipo-evento">
+                Selecciona el tipo de evento
+              </FieldLabel>
+
+              <select
+                id="tipo de evento"
+                {...register("type_event")}
+                className="w-full p-2 border rounded-md"
+
+              >
+                <option value="">Selecciona</option>
+                {stateTypeEvent.map((state) => (
+                  <option key={state.id} value={state.id}>
+                    {state.name}
+                  </option>
+                ))}
+              </select>
+
+              <FieldError>{errors.type_event?.message}</FieldError>
+            </Field>
+
             <Field>
               <FieldLabel htmlFor={`${formId}-time`}>
                 Selecciona la hora a reservar
@@ -106,9 +188,9 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
               <Input
                 list="horas-disponibles"
                 type="time"
-                {...register("time")}
+                {...register("start_time")}
               />
-              <FieldError>{errors.time?.message}</FieldError>
+              <FieldError>{errors.start_time?.message}</FieldError>
               <datalist id="horas-disponibles">
                 {availableHours.map((hour) => (
                   <option key={hour} value={hour}>
@@ -117,7 +199,24 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
                 ))}
               </datalist>
             </Field>
-
+            <Field>
+              <FieldLabel htmlFor={`${formId}-time`}>
+                Selecciona la hora de finalizacion
+              </FieldLabel>
+              <Input
+                list="horas-disponibles"
+                type="time"
+                {...register("end_time")}
+              />
+              <FieldError>{errors.end_time?.message}</FieldError>
+              <datalist id="horas-disponibles">
+                {availableHours.map((hour) => (
+                  <option key={hour} value={hour}>
+                    {hour}
+                  </option>
+                ))}
+              </datalist>
+            </Field>
             <Field>
               <FieldLabel htmlFor="message">
                 Escribe una descripcion del motivo de reserva
@@ -139,7 +238,7 @@ function ReservationForm({ availableHours }: ModalReservasionProps) {
             <Button asChild type="button" variant="secondary">
               <Link to="/reservas">Cancelar</Link>
             </Button>
-            <Button type="submit" variant="default" disabled={isSubmitting}>
+            <Button type="submit" variant="default" /*d isabled={isSubmitting} */ >
               Aceptar
             </Button>
           </Field>
