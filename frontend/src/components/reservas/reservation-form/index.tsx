@@ -111,15 +111,16 @@ function ReservationForm({
             typeId: Number(data.type_event),
           };
           await postReservation(sendData);
-          alert("Registro de reserva exitoso");
-          navigate("/reservas");
+
           setSendSuccess(true);
+          alert("Registro de reserva exitoso");
         } catch (error) {
           setErrorFromServer(setError, error);
           console.log(error);
           return;
         } finally {
           setLoad(false);
+          navigate("/reservas");
         }
       })}
       className="p-4 md:h-full md:w-auto"
@@ -127,7 +128,7 @@ function ReservationForm({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[400px_1fr]">
         <div className="flex flex-col justify-center gap-2">
           <div className={`${stepsView && "hidden"}`}>
-            <div className="flex justify-center gap-14">
+            {/* <div className="flex justify-center gap-14">
               <div className="flex items-center gap-2 text-sm">
                 <div className="h-4 w-4 rounded-full bg-[#0FF48D]"></div>
                 <span>Disponible</span>
@@ -136,7 +137,7 @@ function ReservationForm({
                 <div className="h-4 w-4 rounded-full bg-[#FF600B]"></div>
                 <span>No Disponible</span>
               </div>
-            </div>
+            </div> */}
             <div className="flex flex-col gap-2">
               <div className="flex flex-col items-center">
                 <h2 className="text-center text-xl font-bold">
