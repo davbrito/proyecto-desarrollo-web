@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Field,
   FieldError,
@@ -6,38 +7,53 @@ import {
 } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDate } from "date-fns";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import CalendarReservation from "../calendar-reservation";
-import { reservationFormAction, reservationFormSchema } from './schema';
+import { reservationFormSchema, type ReservationFormValues } from "./schema";
 import { setErrorFromServer } from "@/lib/api";
 import postReservation from "./PostReservation";
 
 export interface ModalReservasionProps {
   availableHours: string[];
-  availableLaboratory: { id: number; name: string; active: boolean, number: number }[];
+  availableLaboratory: {
+    id: number;
+    name: string;
+    active: boolean;
+    number: number;
+  }[];
   stateTypeEvent: {
-    id: any;
+    id: number;
     name: string;
     minimalAnticipation: number;
     blockDuration: number;
     priority: number;
     needsApproval: boolean;
   }[];
+  reserved: {
+    startDate: string;
+    defaultStartTime: string;
+  }[];
 }
 
-function ReservationForm({ availableHours, availableLaboratory, stateTypeEvent }: ModalReservasionProps) {
+function ReservationForm({
+  reserved,
+  availableHours,
+  availableLaboratory,
+  stateTypeEvent,
+}: ModalReservasionProps) {
   const navigate = useNavigate();
   const formId = useId();
-  const form = useForm({
-    resolver: zodResolver(reservationFormSchema),
+  const form = useForm<ReservationFormValues>({
+    resolver: zodResolver(reservationFormSchema as any),
   });
   const { register, handleSubmit, formState, setError, control } = form;
   const { isSubmitting, errors } = formState;
+  const { stepsView, setStepsView } = useState(1);
 
   const dateValue = useWatch({ control, name: "date" });
 
@@ -45,35 +61,31 @@ function ReservationForm({ availableHours, availableLaboratory, stateTypeEvent }
     <form
       noValidate
       onSubmit={handleSubmit(async (data) => {
-
         const authDataRaw = localStorage.getItem("auth");
-
 
         const authData = JSON.parse(authDataRaw as string);
         const userId = authData.state.user.id;
 
-
-
         try {
-          console.log(data)
+          console.log(data);
 
           const sendData = {
             userId: userId,
             name: data.description,
-            startDate: data.date.toISOString().split('T')[0],
+            startDate: data.date.toISOString().split("T")[0],
             endDate: null,
             rrule: null,
             defaultStartTime: data.start_time + ":00",
             defaultEndTime: data.end_time + ":00",
             laboratoryId: Number(data.laboratorio),
             stateId: 1,
-            typeId: Number(data.type_event)
-          }
+            typeId: Number(data.type_event),
+          };
           await postReservation(sendData);
           // navigate("/reservas");
         } catch (error) {
           setErrorFromServer(setError, error);
-          console.log(error)
+          console.log(error);
           return;
         }
       })}
@@ -128,13 +140,50 @@ function ReservationForm({ availableHours, availableLaboratory, stateTypeEvent }
                 ? "Seleccionaste " + formatDate(dateValue, "d 'de' MMMM yyyy")
                 : "Selecciona una fecha"}
             </h2>
-            {/* <p className="text-red-800">Horas de Reservas no disponibles</p>
-            <span className="text-red-800"> 9am - 11 am - 1pm</span> */}
+            {dateValue !== undefined &&
+              (reserved.length > 0 ? (
+                (() => {
+                  const filteredByDate = reserved.filter(
+                    (res) =>
+                      dateValue.toISOString().split("T")[0] === res.startDate,
+                  );
+                  const uniqueHours = [
+                    ...new Map(
+                      filteredByDate.map((item) => [
+                        item.defaultStartTime,
+                        item,
+                      ]),
+                    ).values(),
+                  ];
+
+                  return uniqueHours.length > 0 ? (
+                    <>
+                      <p className="font-bold text-red-800">
+                        Horas no disponibles:
+                      </p>
+                      {uniqueHours.map((res, index) => (
+                        <span className="text-red-800" key={index}>
+                          {res.defaultStartTime.startsWith("0")
+                            ? res.defaultStartTime.slice(1, 5)
+                            : res.defaultStartTime.slice(0, 5)}
+
+                          {index < uniqueHours.length - 1 ? ", " : ""}
+                        </span>
+                      ))}
+                    </>
+                  ) : (
+                    <p className="text-green-600">
+                      No hay reservas para este día.
+                    </p>
+                  );
+                })()
+              ) : (
+                <p className="text-gray-500">Cargando disponibilidad...</p>
+              ))}
           </div>
 
           <FieldGroup>
             <Field>
-
               <FieldLabel htmlFor="laboratorio-selection">
                 Selecciona un laboratorio
               </FieldLabel>
@@ -142,22 +191,21 @@ function ReservationForm({ availableHours, availableLaboratory, stateTypeEvent }
               <select
                 id="laboratorio-selection"
                 {...register("laboratorio")}
-                className="w-full p-2 border rounded-md"
-
+                className="w-full rounded-md border p-2"
               >
                 <option value="">Selecciona</option>
-                {availableLaboratory.map((laboratory: any) => (
-                  laboratory.active === true && (
-                    <option key={laboratory.id} value={laboratory.id}>
-                      {laboratory.name}
-                    </option>
-                  )
-                ))}
+                {availableLaboratory.map(
+                  (laboratory: any) =>
+                    laboratory.active === true && (
+                      <option key={laboratory.id} value={laboratory.id}>
+                        {laboratory.name}
+                      </option>
+                    ),
+                )}
               </select>
 
               <FieldError>{errors.laboratorio?.message}</FieldError>
             </Field>
-
 
             <Field>
               <FieldLabel htmlFor="tipo-evento">
@@ -167,8 +215,7 @@ function ReservationForm({ availableHours, availableLaboratory, stateTypeEvent }
               <select
                 id="tipo de evento"
                 {...register("type_event")}
-                className="w-full p-2 border rounded-md"
-
+                className="w-full rounded-md border p-2"
               >
                 <option value="">Selecciona</option>
                 {stateTypeEvent.map((state) => (
@@ -238,7 +285,10 @@ function ReservationForm({ availableHours, availableLaboratory, stateTypeEvent }
             <Button asChild type="button" variant="secondary">
               <Link to="/reservas">Cancelar</Link>
             </Button>
-            <Button type="submit" variant="default" /*d isabled={isSubmitting} */ >
+            <Button
+              type="submit"
+              variant="default" /*d isabled={isSubmitting} */
+            >
               Aceptar
             </Button>
           </Field>
