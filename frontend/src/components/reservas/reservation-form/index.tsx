@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDate } from "date-fns";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { Button } from "../../ui/button";
@@ -51,84 +51,148 @@ function ReservationForm({
   const form = useForm<ReservationFormValues>({
     resolver: zodResolver(reservationFormSchema as any),
   });
-  const { register, handleSubmit, formState, setError, control } = form;
-  const { isSubmitting, errors } = formState;
-  const { stepsView, setStepsView } = useState(1);
-
+  const [load, setLoad] = useState(false);
+  const { register, handleSubmit, formState, setError, control, trigger } =
+    form;
+  const { errors } = formState;
+  const [stepsView, setStepsView] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState(false);
   const dateValue = useWatch({ control, name: "date" });
+
+  const handleNextStep = async () => {
+    const fieldsStep1: any[] = [
+      "date",
+      "start_time",
+      "end_time",
+      "laboratorio",
+      "type_event",
+      "description",
+    ];
+
+    const isValid = await trigger(fieldsStep1);
+
+    if (isValid) {
+      setStepsView(true);
+    }
+  };
 
   return (
     <form
       noValidate
       onSubmit={handleSubmit(async (data) => {
+        setLoad(true);
         const authDataRaw = localStorage.getItem("auth");
-
         const authData = JSON.parse(authDataRaw as string);
         const userId = authData.state.user.id;
 
-        try {
-          console.log(data);
+        for (const reserve of reserved) {
+          if (reserve.startDate === data.date.toISOString().split("T")[0]) {
+            if (reserve.defaultStartTime === data.start_time + ":00") {
+              alert(
+                `Selecciona otra hora de reserva aparte de ${reserve.defaultStartTime.slice(0, 5)}`,
+              );
+              setLoad(false);
+              return;
+            }
+          }
+        }
 
+        try {
           const sendData = {
             userId: userId,
             name: data.description,
             startDate: data.date.toISOString().split("T")[0],
-            endDate: null,
+            endDate: data.dateFinally.toISOString().split("T")[0],
             rrule: null,
             defaultStartTime: data.start_time + ":00",
             defaultEndTime: data.end_time + ":00",
             laboratoryId: Number(data.laboratorio),
-            stateId: 1,
+            stateId: 1, //estado en PROCESO
             typeId: Number(data.type_event),
           };
           await postReservation(sendData);
-          // navigate("/reservas");
+          alert("Registro de reserva exitoso");
+          navigate("/reservas");
+          setSendSuccess(true);
         } catch (error) {
           setErrorFromServer(setError, error);
           console.log(error);
           return;
+        } finally {
+          setLoad(false);
         }
       })}
       className="p-4 md:h-full md:w-auto"
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[400px_1fr]">
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-center gap-14">
-            <div className="flex items-center gap-2 text-sm">
-              <div className="h-4 w-4 rounded-full bg-[#0FF48D]"></div>
-              <span>Disponible</span>
+        <div className="flex flex-col justify-center gap-2">
+          <div className={`${stepsView && "hidden"}`}>
+            <div className="flex justify-center gap-14">
+              <div className="flex items-center gap-2 text-sm">
+                <div className="h-4 w-4 rounded-full bg-[#0FF48D]"></div>
+                <span>Disponible</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="h-4 w-4 rounded-full bg-[#FF600B]"></div>
+                <span>No Disponible</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <div className="h-4 w-4 rounded-full bg-[#FF600B]"></div>
-              <span>No Disponible</span>
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col items-center">
+                <h2 className="text-center text-xl font-bold">
+                  Calendario de Reservas
+                </h2>
+                <p className="text-center">
+                  Selecciona un dia para ver la disponibilidad
+                </p>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-4 p-4">
+                <Controller
+                  control={control}
+                  name="date"
+                  render={({ field }) => (
+                    <CalendarReservation
+                      selected={field.value}
+                      onSelect={(date) => {
+                        field.onChange(date);
+                      }}
+                    />
+                  )}
+                />
+                <FieldError>{errors.date?.message}</FieldError>
+                <p className="text-destructive px-2 text-center leading-tight font-semibold text-pretty">
+                  <span>Nota:</span> Las reservas tienen una duración de 2 horas
+                </p>
+              </div>
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-col items-center">
-              <h2 className="text-center text-xl font-bold">
-                Calendario de Reservas
-              </h2>
-              <p className="text-center">
-                Selecciona un dia para ver la disponibilidad
-              </p>
-            </div>
-            <div className="flex flex-col items-center justify-center gap-4 p-4">
-              <Controller
-                control={control}
-                name="date"
-                render={({ field }) => (
-                  <CalendarReservation
-                    selected={field.value}
-                    onSelect={(date) => {
-                      field.onChange(date);
-                    }}
-                  />
-                )}
-              />
-              <FieldError>{errors.date?.message}</FieldError>
-              <p className="text-destructive px-2 text-center leading-tight font-semibold text-pretty">
-                <span>Nota:</span> Las reservas tienen una duración de 2 horas
-              </p>
+
+          <div
+            className={`${!stepsView && "hidden"} flex h-full flex-col justify-center`}
+          >
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col items-center">
+                <h2 className="px-8 text-center text-4xl sm:w-[20rem] sm:px-0 sm:text-2xl">
+                  Selecciona la fecha de finalizacion de reserva
+                </h2>
+              </div>
+              <div className="flex flex-col items-center justify-center gap-4 p-4">
+                <Controller
+                  control={control}
+                  name="dateFinally"
+                  render={({ field }) => (
+                    <CalendarReservation
+                      selected={field.value}
+                      onSelect={(date) => {
+                        field.onChange(date);
+                      }}
+                    />
+                  )}
+                />
+                <FieldError className="text-center">
+                  {errors.dateFinally?.message}
+                </FieldError>
+              </div>
             </div>
           </div>
         </div>
@@ -191,7 +255,8 @@ function ReservationForm({
               <select
                 id="laboratorio-selection"
                 {...register("laboratorio")}
-                className="w-full rounded-md border p-2"
+                className={`${stepsView && "cursor-not-allowed bg-gray-100 text-gray-400"} w-full rounded-md border p-2`}
+                disabled={stepsView}
               >
                 <option value="">Selecciona</option>
                 {availableLaboratory.map(
@@ -215,7 +280,8 @@ function ReservationForm({
               <select
                 id="tipo de evento"
                 {...register("type_event")}
-                className="w-full rounded-md border p-2"
+                className={`${stepsView && "text-gray-150 cursor-not-allowed bg-gray-100 text-gray-400"} w-full rounded-md border p-2`}
+                disabled={stepsView}
               >
                 <option value="">Selecciona</option>
                 {stateTypeEvent.map((state) => (
@@ -273,6 +339,8 @@ function ReservationForm({
                 {...register("description")}
                 rows={4}
                 placeholder="Escribe por que necesitas reservar este espacio"
+                className={`${stepsView && "cursor-not-allowed bg-gray-100"}`}
+                disabled={stepsView}
               />
               <FieldError>{errors.description?.message}</FieldError>
             </Field>
@@ -285,12 +353,16 @@ function ReservationForm({
             <Button asChild type="button" variant="secondary">
               <Link to="/reservas">Cancelar</Link>
             </Button>
-            <Button
-              type="submit"
-              variant="default" /*d isabled={isSubmitting} */
-            >
-              Aceptar
-            </Button>
+
+            {stepsView === false ? (
+              <Button type="button" onClick={() => handleNextStep()}>
+                Siguiente
+              </Button>
+            ) : (
+              <Button type="submit" disabled={load || sendSuccess}>
+                {load ? "cargando" : "confirmar"}
+              </Button>
+            )}
           </Field>
         </div>
       </div>
