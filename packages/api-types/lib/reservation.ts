@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { UserSchema } from "./auth";
 
+export const ReservationTypeNames = {
+  PENDIENTE: "PENDIENTE",
+  APROBADO: "APROBADO",
+  RECHAZADO: "RECHAZADO",
+  CANCELADO: "CANCELADO",
+} as const;
+
 export const ReservationSchema = z.object({
   id: z.number(),
   startDate: z.string(),

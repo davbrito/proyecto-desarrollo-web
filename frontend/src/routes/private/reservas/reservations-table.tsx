@@ -11,6 +11,7 @@ import {
 import { getInitials } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { ReservationTypeNames } from "@uneg-lab/api-types/reservation";
 import {
   Beaker,
   Check,
@@ -140,25 +141,27 @@ export function ReservationsTable() {
                   </TableCell>
 
                   <TableCell>
-                    {r.state?.name === "Pendiente" && (
+                    {r.state?.name === ReservationTypeNames.PENDIENTE ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                         <span className="size-1.5 rounded-full bg-amber-500" />
                         {r.state.name}
                       </span>
-                    )}
-                    {r.state?.name === "Aprobada" && (
+                    ) : r.state?.name === ReservationTypeNames.APROBADO ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
                         <span className="size-1.5 rounded-full bg-emerald-500" />
                         {r.state.name}
                       </span>
-                    )}
-                    {r.state?.name === "Conflicto Alto" && (
+                    ) : r.state?.name === ReservationTypeNames.RECHAZADO ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
                         <span className="size-1.5 rounded-full bg-red-500" />
                         {r.state.name}
                       </span>
-                    )}
-                    {!r.state && (
+                    ) : r.state?.name === ReservationTypeNames.CANCELADO ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400">
+                        <span className="size-1.5 rounded-full bg-gray-500" />
+                        {r.state.name}
+                      </span>
+                    ) : (
                       <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </TableCell>
