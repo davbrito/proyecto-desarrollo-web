@@ -4,6 +4,9 @@ import type { Route } from "./+types/nueva";
 import { useEffect } from "react";
 import { getAccessToken } from "@/lib/auth";
 import { useState } from "react";
+import { Spline } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import Spiner from "@/components/ui/Spiner";
 
 export async function clientLoader() {
   return {
@@ -15,6 +18,7 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
   const [laboratorys, setLaboratorys] = useState([]);
   const [stateEventType, setEventType] = useState([]);
   const [reserved, sethoursReserved] = useState([]);
+  const [load, setLoad] = useState(false);
 
   const fetchData = async (route: string, token: string) => {
     try {
@@ -45,6 +49,7 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
   useEffect(() => {
     const initReservation = async () => {
       try {
+        setLoad(true);
         const token = await getAccessToken();
         const [resLabs, resTypes, resReserved] = await Promise.all([
           fetchData("api/laboratories", token as string).catch((e) => ({
@@ -81,6 +86,8 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
       } catch (err) {
         console.error("Error crítico en initReservation:", err);
         throw err;
+      } finally {
+        setLoad(false);
       }
     };
 
@@ -88,11 +95,22 @@ export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
   }, []);
 
   return (
-    <ReservationForm
-      availableHours={loaderData.availableHours}
-      availableLaboratory={laboratorys}
-      stateTypeEvent={stateEventType}
-      reserved={reserved}
-    />
+    <>
+      {load ? (
+        <div className="flex h-screen items-center justify-center text-center">
+          <span className="flex flex-col items-center justify-center gap-4 text-lg">
+            Cargando
+            <Spiner />
+          </span>
+        </div>
+      ) : (
+        <ReservationForm
+          availableHours={loaderData.availableHours}
+          availableLaboratory={laboratorys}
+          stateTypeEvent={stateEventType}
+          reserved={reserved}
+        />
+      )}
+    </>
   );
 }
