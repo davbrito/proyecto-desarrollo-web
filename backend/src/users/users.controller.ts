@@ -31,6 +31,12 @@ export class UsersController {
     return await this.usersService.changeRole(id, dto.role);
   }
 
+  @RequirePermissions(PermissionEnum.READ_USERS)
+  @Get()
+  async findAll() {
+    return await this.usersService.findAll();
+  }
+
   @Get(":id")
   async findOne(@Param("id") id: string) {
     const user = await this.usersService.findOne(id);

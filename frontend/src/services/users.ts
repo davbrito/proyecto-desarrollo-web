@@ -16,11 +16,10 @@ export const CreateUserSchema = z.object({
   password: z.string().min(6),
   name: z.string().min(1),
   email: z
-    .string()
     .email()
     .or(z.literal(""))
-    ?.transform((v) => (v === "" ? null : v))
-    ?.nullable(),
+    .transform((v) => (v === "" ? null : v))
+    .nullable(),
 });
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 
@@ -41,6 +40,10 @@ export const usersService = {
       .get(`users/username/${encodeURIComponent(username)}`)
       .json()
       .then(UserSchema.parse);
+  },
+
+  getAll: async () => {
+    return apiClient.get("users").json().then(UserSchema.array().parse);
   },
 
   changeRole: async (id: string, role: "user" | "admin") => {

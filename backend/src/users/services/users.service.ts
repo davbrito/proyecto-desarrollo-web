@@ -4,11 +4,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ILike, Repository } from "typeorm";
-import { User } from "../entities/user.entity.js";
 import { RoleEnum } from "@uneg-lab/api-types/auth.js";
+import { ILike, Repository } from "typeorm";
 import { RegisterDto } from "../../auth/dtos/register.dto.js";
-import { UpdateUserDto } from "../dto/update-user.dto.js";
+import { User } from "../entities/user.entity.js";
 
 @Injectable()
 export class UsersService {
@@ -33,6 +32,10 @@ export class UsersService {
       where: { username: ILike(username) },
       // cache: { id: `user:by_username:${username}`, milliseconds: 60_000 },
     });
+  }
+
+  findAll() {
+    return this.usersRepository.find({ order: { username: "ASC" } });
   }
 
   async create(

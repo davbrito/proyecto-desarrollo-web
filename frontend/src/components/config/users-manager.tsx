@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { usersService, type User } from "@/services/users";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { usersService, type User } from "@/services/users";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useDeferredValue, useState } from "react";
 import { CreateUserModal } from "./create-user-modal";
 import { ViewUserDrawer } from "./view-user-drawer";
 
@@ -11,6 +12,11 @@ export function UsersManager() {
   const [result, setResult] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const { data: users } = useSuspenseQuery({
+    queryKey: ["users"],
+    queryFn: () => usersService.getAll(),
+  });
 
   const handleSearch = async () => {
     setError(null);
@@ -24,6 +30,15 @@ export function UsersManager() {
     }
   };
 
+  const searchQuery = useDeferredValue(query.trim().toLowerCase());
+
+  const filteredUsers = !searchQuery
+    ? users
+    : users.filter((u) =>
+        `${u.name} ${u.username} ${u.email ?? ""}`
+          .toLowerCase()
+          .includes(searchQuery),
+      );
   return (
     <section className="min-h-full bg-linear-to-br from-gray-50 to-gray-100 text-slate-900">
       <div className="relative flex h-full flex-col">
@@ -56,14 +71,14 @@ export function UsersManager() {
 
         <div className="bg-linear-to-br from-gray-50 to-gray-100 px-8 py-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full max-w-md">
+            <div className="relative flex w-full max-w-md gap-2">
               <Input
                 className="w-full"
                 placeholder="Buscar por username..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              <div className="mt-2 flex gap-2">
+              <div className="flex gap-2">
                 <Button onClick={handleSearch}>Buscar</Button>
                 <Button
                   variant="outline"
@@ -84,39 +99,41 @@ export function UsersManager() {
         </div>
 
         <div className="relative px-8 pt-2 pb-8">
-          {result ? (
-            <div className="max-w-md">
-              <div className="group hover:border-primary/50 relative overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md">
-                <div className="p-4">
-                  <div className="mb-1 flex items-center justify-between">
-                    <h3 className="text-base font-bold">{result.name}</h3>
-                    <Badge className="bg-slate-100 text-slate-700">
-                      @{result.username}
-                    </Badge>
-                  </div>
-
-                  <div className="text-muted-foreground text-sm">
-                    <div>
-                      <span className="font-medium">Email:</span>
-                      <span className="ml-2">{result.email ?? "—"}</span>
+          <div className="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredUsers.map((u) => (
+              <button
+                key={u.id}
+                type="button"
+                onClick={() => {
+                  setResult(u);
+                  setDrawerOpen(true);
+                }}
+                className="text-left sm:max-w-md"
+              >
+                <div className="group hover:border-primary/50 relative overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md">
+                  <div className="p-4">
+                    <div className="mb-1 flex items-center justify-between">
+                      <h3 className="text-base font-bold">{u.name}</h3>
+                      <Badge className="bg-slate-100 text-slate-700">
+                        @{u.username}
+                      </Badge>
                     </div>
-                    <div className="mt-2">
-                      <span className="font-medium">Rol:</span>
-                      <span className="ml-2">{result.role}</span>
+
+                    <div className="text-muted-foreground text-sm">
+                      <div>
+                        <span className="font-medium">Email:</span>
+                        <span className="ml-2">{u.email ?? "—"}</span>
+                      </div>
+                      <div className="mt-2">
+                        <span className="font-medium">Rol:</span>
+                        <span className="ml-2">{u.role}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-dashed p-20 text-center">
-              <h3 className="text-lg font-medium">Busca un usuario</h3>
-              <p className="text-muted-foreground">
-                Usa el campo de búsqueda para encontrar usuarios por su
-                username.
-              </p>
-            </div>
-          )}
+              </button>
+            ))}
+          </div>
         </div>
 
         <ViewUserDrawer
