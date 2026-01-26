@@ -9,6 +9,10 @@ export enum PermissionEnum {
   CREATE_ADMIN = "users:create_admin",
 
   // Solicitudes
+  READ_LABORATORIES = "laboratories:read",
+  CREATE_LABORATORIES = "laboratories:create",
+  UPDATE_LABORATORIES = "laboratories:update",
+  DELETE_LABORATORIES = "laboratories:delete",
 }
 
 export const ROLE_PERMISSIONS: Record<RoleEnum, PermissionEnum[]> = {
@@ -17,6 +21,13 @@ export const ROLE_PERMISSIONS: Record<RoleEnum, PermissionEnum[]> = {
     PermissionEnum.CREATE_USERS,
     PermissionEnum.UPDATE_USERS,
     PermissionEnum.DELETE_USERS,
+
+    PermissionEnum.CREATE_ADMIN,
+
+    PermissionEnum.READ_LABORATORIES,
+    PermissionEnum.CREATE_LABORATORIES,
+    PermissionEnum.UPDATE_LABORATORIES,
+    PermissionEnum.DELETE_LABORATORIES,
   ],
   [RoleEnum.USER]: [],
 };
