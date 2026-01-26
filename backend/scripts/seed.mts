@@ -145,14 +145,15 @@ async function seed() {
   try {
     const stateRepo = ds.getRepository(State);
     const states = ["PENDIENTE", "APROBADO", "RECHAZADO", "CANCELADO"];
-    for (const name of states) {
-      const exists = await stateRepo.findOneBy({ name });
-      if (!exists) {
-        await stateRepo.save(stateRepo.create({ name }));
-        console.log(`✅ Estado creado: ${name}`);
-      }
-    }
 
+    const result = await stateRepo.upsert(
+      states.map((name) => ({ name })),
+      { conflictPaths: ["name"], skipUpdateIfNoValuesChanged: true },
+    );
+
+    if (result.generatedMaps.length > 0) {
+      console.log("✅ Estados de reserva creados:", states.join(", "));
+    }
     const typeRepo = ds.getRepository(ReserveType);
     const types = [
       { name: "CLASE", priority: 10, needsApproval: false, blockDuration: 1.5 },
@@ -164,12 +165,15 @@ async function seed() {
         blockDuration: 4,
       },
     ];
-    for (const t of types) {
-      const exists = await typeRepo.findOneBy({ name: t.name });
-      if (!exists) {
-        await typeRepo.save(typeRepo.create(t));
-        console.log(`✅ Tipo de reserva creado: ${t.name}`);
-      }
+    const upsertResult = await typeRepo.upsert(types, {
+      conflictPaths: ["name"],
+      skipUpdateIfNoValuesChanged: true,
+    });
+    if (upsertResult.generatedMaps.length > 0) {
+      console.log(
+        "✅ Tipos de reserva creados o actualizados:",
+        types.map((t) => t.name).join(", "),
+      );
     }
 
     const labRepo = ds.getRepository(Laboratory);
