@@ -1,8 +1,9 @@
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+import babel from "vite-plugin-babel";
 import devtoolsJson from "vite-plugin-devtools-json";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,11 +12,15 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
     tsconfigPaths(),
-    // react({
-    //   babel: {
-    //     plugins: [["babel-plugin-react-compiler"]],
-    //   },
-    // }),
+    babel({
+      filter: /\.[jt]sx?$/,
+      babelConfig: {
+        babelrc: false,
+        configFile: false,
+        presets: ["@babel/preset-typescript"],
+        plugins: [["babel-plugin-react-compiler"]],
+      },
+    }),
   ],
   server: {
     proxy: {
