@@ -21,12 +21,19 @@ import {
   Eye,
   Search,
   X,
+  Filter,
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router";
 import { getAccessToken } from "@/lib/auth";
 
 const PAGE_SIZE = 5;
+
+// Mapeo de IDs de estado según tu lógica (2: Aprobado, 3: Cancelado/Rechazado)
+const STATUS_IDS = {
+  APROBADO: 2,
+  RECHAZADO: 3,
+};
 
 function formatDate(dateStr?: string | Date) {
   if (!dateStr) return "—";
@@ -50,22 +57,22 @@ export function ReservationsTable() {
   const [typeActivity, setTypeActivity] = useState<
     "CLASE" | "EVENTO" | "MANTENIMIENTO" | ""
   >("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+
+  const queryClient = useQueryClient();
 
   const { data } = useSuspenseQuery({
-    queryKey: [
-      "reservations",
-      { search: search, typeActivity: typeActivity, page },
-    ],
+    queryKey: ["reservations", { search, typeActivity, statusFilter, page }],
     queryFn: () =>
       reservationsService.search({
         search: search || undefined,
         page,
         limit: PAGE_SIZE,
         type: typeActivity || undefined,
+        state: statusFilter || undefined,
       }),
   });
 
-  const queryClient = useQueryClient();
   const total = data.meta?.totalItems ?? 0;
   const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const to = Math.min(page * PAGE_SIZE, total);
@@ -76,58 +83,43 @@ export function ReservationsTable() {
       setPage(1);
     }
   }, [total, page]);
-  function prev() {
-    setPage((p) => Math.max(1, p - 1));
-  }
-  function next() {
-    setPage((p) => (p * PAGE_SIZE < total ? p + 1 : p));
-  }
 
-  const filteredData = pageData.filter(
-    (r) => typeActivity === "" || r.type?.name === typeActivity,
-  );
+  const updateReservationStatus = async (
+    id: number,
+    currentStatus: string,
+    nextStatusId: number,
+  ) => {
+    const actionLabel =
+      nextStatusId === STATUS_IDS.APROBADO ? "aprobar" : "cancelar";
 
-  const cancelledReservation = async (id: number, name: string) => {
-    if (name === "RECHAZADO") return;
+    if (currentStatus === "APROBADO" && nextStatusId === STATUS_IDS.APROBADO)
+      return;
+    if (currentStatus === "RECHAZADO" && nextStatusId === STATUS_IDS.RECHAZADO)
+      return;
+
     try {
       const token = await getAccessToken();
-      await fetch(`http://localhost:3000/api/reservations/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:3000/api/reservations/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ stateId: nextStatusId }),
         },
-        body: JSON.stringify({
-          stateId: 3,
-        }),
-      });
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      alert(" Se cancelo exitosamente");
-    } catch (e: any) {
-      alert("Ocurrio un error en cancelar la solicitud");
-      console.log(e);
-    }
-  };
+      );
 
-  const aprovedReservation = async (id: number, name: string) => {
-    if (name === "APROBADO") return;
-    try {
-      const token = await getAccessToken();
-      await fetch(`http://localhost:3000/api/reservations/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          stateId: 2,
-        }),
-      });
+      if (!response.ok) throw new Error();
+
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      alert(" Se aprobo exitosamente");
-    } catch (e: any) {
-      alert("Ocurrio un error en aprobar la solicitud");
-      console.log(e);
+      alert(
+        `Se ${actionLabel === "aprobar" ? "aprobó" : "canceló"} exitosamente`,
+      );
+    } catch (e) {
+      alert(`Ocurrió un error al intentar ${actionLabel} la solicitud`);
+      console.error(e);
     }
   };
 
@@ -149,82 +141,61 @@ export function ReservationsTable() {
           />
         </label>
 
-        <div>
+        <div className="flex items-center gap-2">
+          {/* Menú Tipo de Actividad */}
           <Menu as="div" className="relative inline-block text-left">
-            <div>
-              <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-600 shadow-xs hover:bg-gray-200">
-                Tipo de actividad
-                <svg
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="-mr-1 size-5 text-gray-400"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </MenuButton>
-            </div>
-
-            <MenuItems
-              transition
-              className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-gray-800 opacity-80 shadow-lg ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
-            >
+            <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-600 shadow-xs hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
+              Actividad: {typeActivity || "Todas"}
+              <ChevronRight className="size-4 rotate-90 text-gray-400" />
+            </MenuButton>
+            <MenuItems className="absolute right-0 z-10 mt-2 w-44 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800">
               <div className="py-1">
-                <MenuItem>
-                  <div
-                    onClick={() => {
-                      setTypeActivity("");
-                      setPage(1);
-                    }}
-                    className="block cursor-pointer px-4 py-2 text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white"
-                  >
-                    Todos
-                  </div>
-                </MenuItem>
+                {["", "CLASE", "EVENTO", "MANTENIMIENTO"].map((type) => (
+                  <MenuItem key={type}>
+                    <button
+                      onClick={() => {
+                        setTypeActivity(type as any);
+                        setPage(1);
+                      }}
+                      className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+                    >
+                      {type || "Todas"}
+                    </button>
+                  </MenuItem>
+                ))}
+              </div>
+            </MenuItems>
+          </Menu>
 
-                <MenuItem>
-                  <div
-                    onClick={() => {
-                      setTypeActivity("CLASE");
-                      setPage(1);
-                    }}
-                    className="block cursor-pointer px-4 py-2 text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white"
-                  >
-                    Clase
-                  </div>
-                </MenuItem>
-
-                <MenuItem>
-                  <div
-                    onClick={() => {
-                      setTypeActivity("EVENTO");
-                      setPage(1);
-                    }}
-                    className="block cursor-pointer px-4 py-2 text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white"
-                  >
-                    Evento
-                  </div>
-                </MenuItem>
-                <MenuItem>
-                  <div
-                    onClick={() => {
-                      setTypeActivity("MANTENIMIENTO");
-                      setPage(1);
-                    }}
-                    className="block cursor-pointer px-4 py-2 text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white"
-                  >
-                    Mantenimiento
-                  </div>
-                </MenuItem>
+          {/* Menú Estado de Reserva */}
+          <Menu as="div" className="relative inline-block text-left">
+            <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-600 shadow-xs hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
+              Estado: {statusFilter || "Todos"}
+              <Filter className="size-4 text-gray-400" />
+            </MenuButton>
+            <MenuItems className="absolute right-0 z-10 mt-2 w-44 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none dark:bg-gray-800">
+              <div className="py-1">
+                {["", "PENDIENTE", "APROBADO", "RECHAZADO", "CANCELADO"].map(
+                  (status) => (
+                    <MenuItem key={status}>
+                      <button
+                        onClick={() => {
+                          setStatusFilter(status);
+                          setPage(1);
+                        }}
+                        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+                      >
+                        {status || "Todos"}
+                      </button>
+                    </MenuItem>
+                  ),
+                )}
               </div>
             </MenuItems>
           </Menu>
         </div>
       </div>
+
       <div className="overflow-hidden rounded-xl border border-[#dbdfe6] bg-white shadow-sm dark:border-gray-700 dark:bg-[#1e232e]">
         <div className="overflow-x-auto">
           <Table>
@@ -241,8 +212,8 @@ export function ReservationsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredData.length > 0 ? (
-                filteredData.map((r) => (
+              {pageData.length > 0 ? (
+                pageData.map((r) => (
                   <TableRow
                     key={r.id}
                     className="group transition-colors hover:bg-[#f8f9fa] dark:hover:bg-gray-800/30"
@@ -257,24 +228,17 @@ export function ReservationsTable() {
                             {r.user?.name}
                           </p>
                           <p className="text-xs text-[#616f89]">
-                            {r.user?.email ? r.user.email.split("@")[1] : ""}
+                            {r.user?.email?.split("@")[1] || ""}
                           </p>
                         </div>
                       </div>
                     </TableCell>
-
                     <TableCell className="text-sm text-[#616f89] dark:text-gray-300">
-                      <div className="flex items-center gap-2">
-                        {r.name ?? "—"}
-                      </div>
+                      {r.name ?? "—"}
                     </TableCell>
-
                     <TableCell className="text-sm text-[#616f89] dark:text-gray-300">
-                      <div className="flex items-center gap-2">
-                        {r.type?.name ?? "—"}
-                      </div>
+                      {r.type?.name ?? "—"}
                     </TableCell>
-
                     <TableCell className="text-sm text-[#616f89] dark:text-gray-300">
                       <div className="flex items-center gap-2">
                         <Beaker className="size-4 text-gray-400" />
@@ -284,33 +248,42 @@ export function ReservationsTable() {
                     <TableCell className="text-sm text-[#616f89] dark:text-gray-300">
                       {formatDate(r.startDate)}
                     </TableCell>
-                    <TableCell className="w-fit rounded bg-gray-100 px-2 py-1 font-mono text-xs text-[#616f89] dark:bg-gray-800 dark:text-gray-300">
-                      {formatTime(r.defaultStartTime, r.defaultEndTime)}
+                    <TableCell>
+                      <span className="rounded bg-gray-100 px-2 py-1 font-mono text-xs text-[#616f89] dark:bg-gray-800 dark:text-gray-300">
+                        {formatTime(r.defaultStartTime, r.defaultEndTime)}
+                      </span>
                     </TableCell>
                     <TableCell>
-                      {r.state?.name === ReservationTypeNames.PENDIENTE ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                          <span className="size-1.5 rounded-full bg-amber-500" />
-                          {r.state.name}
-                        </span>
-                      ) : r.state?.name === ReservationTypeNames.APROBADO ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                          <span className="size-1.5 rounded-full bg-emerald-500" />
-                          {r.state.name}
-                        </span>
-                      ) : r.state?.name === ReservationTypeNames.RECHAZADO ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
-                          <span className="size-1.5 rounded-full bg-red-500" />
-                          {r.state.name}
-                        </span>
-                      ) : r.state?.name === ReservationTypeNames.CANCELADO ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400">
-                          <span className="size-1.5 rounded-full bg-gray-500" />
-                          {r.state.name}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
+                      {/* Lógica de colores de estado simplificada */}
+                      {(() => {
+                        const status = r.state?.name;
+                        let styles =
+                          "border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-900/30 dark:text-gray-400";
+                        let dot = "bg-gray-500";
+
+                        if (status === ReservationTypeNames.PENDIENTE) {
+                          styles =
+                            "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+                          dot = "bg-amber-500";
+                        } else if (status === ReservationTypeNames.APROBADO) {
+                          styles =
+                            "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400";
+                          dot = "bg-emerald-500";
+                        } else if (status === ReservationTypeNames.RECHAZADO) {
+                          styles =
+                            "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400";
+                          dot = "bg-red-500";
+                        }
+
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${styles}`}
+                          >
+                            <span className={`size-1.5 rounded-full ${dot}`} />
+                            {status || "—"}
+                          </span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -318,7 +291,7 @@ export function ReservationsTable() {
                           asChild
                           size="sm"
                           variant="outline"
-                          className="h-8 w-8 rounded-lg border-slate-300 hover:bg-slate-100"
+                          className="h-8 w-8 rounded-lg"
                         >
                           <Link
                             to={`/reservas/${r.id}`}
@@ -329,19 +302,27 @@ export function ReservationsTable() {
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => {
-                            aprovedReservation(r.id, r.state!.name);
-                          }}
-                          className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40"
+                          onClick={() =>
+                            updateReservationStatus(
+                              r.id,
+                              r.state!.name,
+                              STATUS_IDS.APROBADO,
+                            )
+                          }
+                          className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
                         >
                           <Check className="size-4" />
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => {
-                            cancelledReservation(r.id, r.state!.name);
-                          }}
-                          className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
+                          onClick={() =>
+                            updateReservationStatus(
+                              r.id,
+                              r.state!.name,
+                              STATUS_IDS.RECHAZADO,
+                            )
+                          }
+                          className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400"
                         >
                           <X className="size-4" />
                         </Button>
@@ -354,15 +335,19 @@ export function ReservationsTable() {
                   <TableCell colSpan={8} className="h-32 text-center">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <p className="text-sm font-medium text-[#616f89]">
-                        No hay ninguna actividad que coincida con la búsqueda
+                        No hay resultados para los filtros aplicados
                       </p>
-                      {typeActivity && (
+                      {(typeActivity || statusFilter || search) && (
                         <Button
                           variant="link"
                           className="text-xs text-blue-500"
-                          onClick={() => setTypeActivity("")}
+                          onClick={() => {
+                            setTypeActivity("");
+                            setStatusFilter("");
+                            setSearch("");
+                          }}
                         >
-                          Limpiar filtros de actividad
+                          Limpiar todos los filtros
                         </Button>
                       )}
                     </div>
@@ -373,6 +358,7 @@ export function ReservationsTable() {
           </Table>
         </div>
 
+        {/* Paginación */}
         <div className="flex items-center justify-between border-t border-[#dbdfe6] bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-[#1e232e]">
           <div className="text-sm text-[#616f89] dark:text-gray-400">
             Mostrando{" "}
@@ -393,7 +379,7 @@ export function ReservationsTable() {
             <Button
               variant="outline"
               className="rounded-lg p-2"
-              onClick={prev}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
             >
               <ChevronLeft className="size-4" />
@@ -401,7 +387,9 @@ export function ReservationsTable() {
             <Button
               variant="outline"
               className="rounded-lg p-2"
-              onClick={next}
+              onClick={() =>
+                setPage((p) => (p * PAGE_SIZE < total ? p + 1 : p))
+              }
               disabled={page * PAGE_SIZE >= total}
             >
               <ChevronRight className="size-4" />
