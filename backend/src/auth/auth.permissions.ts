@@ -8,11 +8,18 @@ export enum PermissionEnum {
   DELETE_USERS = "users:delete",
   CREATE_ADMIN = "users:create_admin",
 
-  // Solicitudes
+  // Laboratorios
   READ_LABORATORIES = "laboratories:read",
   CREATE_LABORATORIES = "laboratories:create",
   UPDATE_LABORATORIES = "laboratories:update",
   DELETE_LABORATORIES = "laboratories:delete",
+
+  // Reservas
+  READ_RESERVATIONS = "reservations:read",
+  CREATE_RESERVATIONS = "reservations:create",
+  UPDATE_RESERVATIONS = "reservations:update",
+  DELETE_RESERVATIONS = "reservations:delete",
+  MANAGE_RESERVATIONS_STATE = "reservations:manage_state",
 }
 
 export const ROLE_PERMISSIONS: Record<RoleEnum, PermissionEnum[]> = {
@@ -28,8 +35,18 @@ export const ROLE_PERMISSIONS: Record<RoleEnum, PermissionEnum[]> = {
     PermissionEnum.CREATE_LABORATORIES,
     PermissionEnum.UPDATE_LABORATORIES,
     PermissionEnum.DELETE_LABORATORIES,
+
+    PermissionEnum.READ_RESERVATIONS,
+    PermissionEnum.CREATE_RESERVATIONS,
+    PermissionEnum.UPDATE_RESERVATIONS,
+    PermissionEnum.DELETE_RESERVATIONS,
+    PermissionEnum.MANAGE_RESERVATIONS_STATE,
   ],
-  [RoleEnum.USER]: [],
+  [RoleEnum.USER]: [
+    PermissionEnum.READ_LABORATORIES,
+    PermissionEnum.READ_RESERVATIONS,
+    PermissionEnum.CREATE_RESERVATIONS,
+  ],
 };
 
 export function hasPermissions(

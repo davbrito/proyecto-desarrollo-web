@@ -1,22 +1,22 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { setErrorFromServer } from "@/lib/api";
+import { reservationsService } from "@/services/reservations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDate } from "date-fns";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import CalendarReservation from "../calendar-reservation";
 import { reservationFormSchema, type ReservationFormValues } from "./schema";
-import { setErrorFromServer } from "@/lib/api";
-import postReservation from "./PostReservation";
 
 export interface ModalReservasionProps {
   availableHours: string[];
@@ -81,9 +81,6 @@ function ReservationForm({
       noValidate
       onSubmit={handleSubmit(async (data) => {
         setLoad(true);
-        const authDataRaw = localStorage.getItem("auth");
-        const authData = JSON.parse(authDataRaw as string);
-        const userId = authData.state.user.id;
 
         for (const reserve of reserved) {
           if (reserve.startDate === data.date.toISOString().split("T")[0]) {
@@ -99,7 +96,6 @@ function ReservationForm({
 
         try {
           const sendData = {
-            userId: userId,
             name: data.description,
             startDate: data.date.toISOString().split("T")[0],
             endDate: data.dateFinally.toISOString().split("T")[0],
@@ -110,11 +106,12 @@ function ReservationForm({
             stateId: 1, //estado en PROCESO
             typeId: Number(data.type_event),
           };
-          await postReservation(sendData);
+          await reservationsService.create(sendData);
 
           setSendSuccess(true);
-          alert("Registro de reserva exitoso");
+          toast.success("Registro de reserva exitoso");
         } catch (error) {
+          toast.error("Error al crear la reservación");
           setErrorFromServer(setError, error);
           console.log(error);
           return;

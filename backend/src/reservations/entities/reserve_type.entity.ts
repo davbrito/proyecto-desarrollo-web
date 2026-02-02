@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryColumn } from "typeorm";
 
 @Entity({ name: "reserve_types" })
 export class ReserveType {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn({ type: "int" })
   id: number;
 
   @Column("text", {

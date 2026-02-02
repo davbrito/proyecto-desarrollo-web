@@ -4,34 +4,42 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  STATUS_IDS,
+  useUpdateReservationState,
+} from "@/hooks/use-update-reservation-state";
+import { useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 import type { Reservation } from "@uneg-lab/api-types/reservation";
 import { ReservationTypeNames as ReservationStates } from "@uneg-lab/api-types/reservation";
-import { Link } from "react-router";
+import {
+  ReserveTypeNames,
+  type ReserveTypeName,
+} from "@uneg-lab/api-types/reserve-type";
+import { capitalize } from "lodash-es";
 import {
   CalendarIcon,
   CheckIcon,
   ClockIcon,
   EyeIcon,
+  Loader2,
   MapPinIcon,
   XIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import type { Route } from "./+types/dashboard";
-import { capitalize } from "lodash-es";
-import {
-  ReserveTypeNames,
-  type ReserveTypeName,
-} from "@uneg-lab/api-types/reserve-type";
 
 const reserveTypeTabs = [
   { label: "Todas", value: null },
@@ -59,28 +67,43 @@ function formatHorario(r: Reservation) {
 export default function DashboardPage(_: Route.ComponentProps) {
   const [activeTab, setActiveTab] = useState<ReserveTypeName | null>(null);
   const [selectedState, setSelectedState] = useState<string | null>(null);
+  const { user } = useUser();
+  const isAdmin = user?.role === RoleEnum.ADMIN;
 
   const { data: stats } = useSuspenseQuery({
     queryKey: ["dashboard", "stats"],
     queryFn: () => reservationsService.stats(),
   });
 
-  const { data: recent } = useQuery({
+  const {
+    data: recent,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isPending,
+  } = useInfiniteQuery({
     queryKey: [
       "dashboard",
       "recentReservations",
       { state: selectedState, type: activeTab },
     ],
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       reservationsService.search({
-        limit: 8,
-        page: 1,
+        limit: 20,
+        page: pageParam,
         state: selectedState ?? undefined,
         type: activeTab ?? undefined,
       }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.currentPage < lastPage.meta.totalPages
+        ? lastPage.meta.currentPage + 1
+        : undefined,
   });
 
-  const filteredReservas = recent?.data ?? [];
+  const { mutate: changeState } = useUpdateReservationState();
+
+  const filteredReservas = recent?.pages.flatMap((page) => page.data) ?? [];
 
   return (
     <div className="min-h-0 flex-1 overflow-auto bg-linear-to-br from-gray-50 to-gray-100 p-6">
@@ -145,9 +168,73 @@ export default function DashboardPage(_: Route.ComponentProps) {
           </CardHeader>
 
           <CardContent className="space-y-3">
-            {filteredReservas.map((reserva) => (
-              <CardReserva key={reserva.id} reserva={reserva} />
-            ))}
+            {isPending ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Card key={i} className="border border-slate-200 p-4">
+                  <div className="flex flex-col gap-4 md:flex-row">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-5 w-20" />
+                      </div>
+                      <Skeleton className="h-4 w-48" />
+                      <div className="flex gap-4">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Skeleton className="h-9 w-9 rounded-full" />
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : filteredReservas.length > 0 ? (
+              filteredReservas.map((reserva) => (
+                <CardReserva
+                  key={reserva.id}
+                  reserva={reserva}
+                  isAdmin={isAdmin}
+                  onApprove={() =>
+                    changeState({
+                      id: reserva.id,
+                      stateId: STATUS_IDS.APROBADO,
+                    })
+                  }
+                  onReject={() =>
+                    changeState({
+                      id: reserva.id,
+                      stateId: STATUS_IDS.RECHAZADO,
+                    })
+                  }
+                />
+              ))
+            ) : (
+              <div className="text-muted-foreground flex h-32 items-center justify-center">
+                No se encontraron reservas
+              </div>
+            )}
+
+            {hasNextPage && (
+              <div className="flex justify-center pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchNextPage()}
+                  disabled={!hasNextPage || isFetchingNextPage}
+                >
+                  {isFetchingNextPage ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Cargando...
+                    </>
+                  ) : (
+                    "Ver más"
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -203,7 +290,19 @@ function Estados({
   );
 }
 
-function CardReserva({ reserva }: { reserva: Reservation }) {
+function CardReserva({
+  reserva,
+  isAdmin,
+  onApprove,
+  onReject,
+}: {
+  reserva: Reservation;
+  isAdmin: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const isPending = reserva.state?.name === ReservationStates.PENDIENTE;
+
   return (
     <Card className="border border-slate-200 p-3 transition-all hover:border-slate-300 md:p-4">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
@@ -241,6 +340,27 @@ function CardReserva({ reserva }: { reserva: Reservation }) {
         </div>
 
         <div className="flex gap-2">
+          {isAdmin && isPending && (
+            <>
+              <Button
+                size="icon"
+                className="h-9 w-9 rounded-full bg-green-600 hover:bg-green-700"
+                title="Aprobar"
+                onClick={onApprove}
+              >
+                <CheckIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-9 w-9 rounded-full border-red-300 text-red-600 hover:bg-red-50"
+                title="Rechazar"
+                onClick={onReject}
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
           <Button
             asChild
             size="icon"
@@ -251,21 +371,6 @@ function CardReserva({ reserva }: { reserva: Reservation }) {
             <Link to={`/reservas/${reserva.id}`} aria-label="Ver detalles">
               <EyeIcon className="h-4 w-4" />
             </Link>
-          </Button>
-          <Button
-            size="icon"
-            className="h-9 w-9 rounded-full bg-green-600 hover:bg-green-700"
-            title="Aprobar"
-          >
-            <CheckIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            className="h-9 w-9 rounded-full border-red-300 text-red-600 hover:bg-red-50"
-            title="Rechazar"
-          >
-            <XIcon className="h-4 w-4" />
           </Button>
         </div>
       </div>

@@ -149,7 +149,7 @@ async function seed() {
     const states = ["PENDIENTE", "APROBADO", "RECHAZADO", "CANCELADO"];
 
     const result = await stateRepo.upsert(
-      states.map((name) => ({ name })),
+      states.map((name, index) => ({ id: index + 1, name })),
       { conflictPaths: ["name"], skipUpdateIfNoValuesChanged: true },
     );
 
@@ -160,18 +160,21 @@ async function seed() {
 
     const types = [
       {
+        id: 1,
         name: ReserveTypeNames.CLASE,
         priority: 10,
         needsApproval: false,
         blockDuration: 1.5,
       },
       {
+        id: 2,
         name: ReserveTypeNames.EVENTO,
         priority: 5,
         needsApproval: true,
         blockDuration: 2,
       },
       {
+        id: 3,
         name: ReserveTypeNames.MANTENIMIENTO,
         priority: 20,
         needsApproval: false,

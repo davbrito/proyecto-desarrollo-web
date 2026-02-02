@@ -3,8 +3,10 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  ForbiddenException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { RoleEnum } from "@uneg-lab/api-types/auth.js";
 import { ReservationTypeNames } from "@uneg-lab/api-types/reservation.js";
 import {
   FilterOperator,
@@ -51,12 +53,12 @@ export class ReservationsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(dto: CreateReservationDto) {
+  async create(dto: CreateReservationDto, user: Express.User) {
     try {
       await this.dataSource.transaction(async (manager) => {
         const reservation = manager.create(Reservation, {
           ...dto,
-          user: { id: dto.userId },
+          user: { id: user.id },
           laboratory: { id: dto.laboratoryId },
           type: { id: dto.typeId },
           state: { id: dto.stateId },
@@ -129,15 +131,17 @@ export class ReservationsService {
       return [startDate];
     }
   }
-  async search(query: PaginateQuery) {
-    return await paginate(
-      query,
-      this.reservationRepo,
-      RESERVATION_PAGINATION_CONFIG,
-    );
+  async search(query: PaginateQuery, user: Express.User) {
+    const queryBuilder = this.reservationRepo.createQueryBuilder("reservation");
+
+    if (user.role !== RoleEnum.ADMIN) {
+      queryBuilder.where("reservation.user.id = :userId", { userId: user.id });
+    }
+
+    return await paginate(query, queryBuilder, RESERVATION_PAGINATION_CONFIG);
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, user: Express.User) {
     const reservation = await this.reservationRepo.findOne({
       where: { id },
       relations: [
@@ -155,14 +159,19 @@ export class ReservationsService {
       throw new NotFoundException(`Reserva con ID ${id} no encontrada`);
     }
 
+    if (user.role !== RoleEnum.ADMIN && reservation.user?.id !== user.id) {
+      throw new ForbiddenException("No tienes permiso para ver esta reserva");
+    }
+
     return reservation;
   }
 
-  async update(id: number, dto: UpdateReservationDto) {
+  async update(id: number, dto: UpdateReservationDto, user: Express.User) {
+    await this.findOne(id, user); // Check if exists and user has permission
+
     const reservation = await this.reservationRepo.preload({
       ...dto,
       id,
-      user: dto.userId ? { id: dto.userId } : undefined,
       laboratory: dto.laboratoryId ? { id: dto.laboratoryId } : undefined,
       type: dto.typeId ? { id: dto.typeId } : undefined,
       state: dto.stateId ? { id: dto.stateId } : undefined,
@@ -175,15 +184,43 @@ export class ReservationsService {
     return await this.reservationRepo.save(reservation);
   }
 
-  async remove(id: number) {
-    const reservation = await this.findOne(id);
+  async updateState(id: number, stateId: number, user: Express.User) {
+    if (user.role !== RoleEnum.ADMIN) {
+      throw new ForbiddenException(
+        "Solo los administradores pueden cambiar el estado",
+      );
+    }
+    const reservation = await this.reservationRepo.findOneBy({ id });
+
+    if (!reservation) {
+      throw new NotFoundException(`Reserva con ID ${id} no encontrada`);
+    }
+
+    reservation.state = { id: stateId } as any;
+
+    if (stateId === 2) {
+      // APROBADO
+      reservation.approvedAt = new Date();
+    }
+
+    return await this.reservationRepo.save(reservation);
+  }
+
+  async remove(id: number, user: Express.User) {
+    const reservation = await this.findOne(id, user);
     return await this.reservationRepo.remove(reservation);
   }
 
-  async getStats() {
-    const raw = await this.reservationRepo
+  async getStats(user: Express.User) {
+    const queryBuilder = this.reservationRepo
       .createQueryBuilder("reservation")
-      .leftJoin("reservation.state", "state")
+      .leftJoin("reservation.state", "state");
+
+    if (user.role !== RoleEnum.ADMIN) {
+      queryBuilder.where("reservation.user.id = :userId", { userId: user.id });
+    }
+
+    const raw = await queryBuilder
       .select([
         "COUNT(*) as total",
         "COUNT(*) FILTER (WHERE state.name = :pendiente) as pendientes",
