@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { ReserveType } from "../entities/reserve_type.entity.js";
+import { ReserveType } from "../entities/reserve_type.entity";
 import {
   CreateReserveTypeDto,
   UpdateReserveTypeDto,
-} from "../dto/reserve-type.dto.js";
+} from "../dto/reserve-type.dto";
 
 @Injectable()
 export class ReserveTypesService {

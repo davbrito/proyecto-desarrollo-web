@@ -7,12 +7,12 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import { Auth } from "../auth/decorators/auth.decorator.js";
-import { RequirePermissions } from "../auth/decorators/permissions.decorator.js";
-import { RegisterDto } from "../auth/dtos/register.dto.js";
-import { UsersService } from "./services/users.service.js";
-import { ChangeUserRoleDto } from "./dto/change-user-role.dto.js";
-import { PermissionEnum } from "../auth/auth.permissions.js";
+import { Auth } from "../auth/decorators/auth.decorator";
+import { RequirePermissions } from "../auth/decorators/permissions.decorator";
+import { RegisterDto } from "../auth/dtos/register.dto";
+import { UsersService } from "./services/users.service";
+import { ChangeUserRoleDto } from "./dto/change-user-role.dto";
+import { PermissionEnum } from "../auth/auth.permissions";
 
 @Auth()
 @Controller("users")

@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
   type Relation,
 } from "typeorm";
-import { User } from "./user.entity.js";
+import { User } from "./user.entity";
 
 @Entity()
 @Index(["user", "createdAt"])

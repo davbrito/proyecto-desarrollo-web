@@ -10,13 +10,13 @@ import {
 } from "typeorm";
 
 import type { Relation } from "typeorm";
-import { User } from "../../users/entities/user.entity.js";
-import { Laboratory } from "../../laboratories/entities/laboratory.entity.js";
-import { ReserveType } from "./reserve_type.entity.js";
-import { State } from "./state.entity.js";
-import { Ocupation } from "./ocupation.entity.js";
-import { Class } from "./class.entity.js";
-import { Event } from "./event.entity.js";
+import { User } from "../../users/entities/user.entity";
+import { Laboratory } from "../../laboratories/entities/laboratory.entity";
+import { ReserveType } from "./reserve_type.entity";
+import { State } from "./state.entity";
+import { Ocupation } from "./ocupation.entity";
+import { Class } from "./class.entity";
+import { Event } from "./event.entity";
 
 @Entity({ name: "reservations" })
 export class Reservation {

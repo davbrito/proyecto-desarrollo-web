@@ -1,16 +1,16 @@
-import { RoleEnum } from "@uneg-lab/api-types/auth.js";
-import { ReserveTypeNames } from "@uneg-lab/api-types/reserve-type.js";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
+import { ReserveTypeNames } from "@uneg-lab/api-types/reserve-type";
 import pkgRRule from "rrule";
 import type { DataSource } from "typeorm";
-import { dataSource } from "../src/config/typeorm.js";
-import { Laboratory } from "../src/laboratories/entities/laboratory.entity.js";
-import { Class } from "../src/reservations/entities/class.entity.js";
-import { Event } from "../src/reservations/entities/event.entity.js";
-import { Ocupation } from "../src/reservations/entities/ocupation.entity.js";
-import { Reservation } from "../src/reservations/entities/reservation.entity.js";
-import { ReserveType } from "../src/reservations/entities/reserve_type.entity.js";
-import { State } from "../src/reservations/entities/state.entity.js";
-import { User } from "../src/users/entities/user.entity.js";
+import { dataSource } from "../src/config/typeorm";
+import { Laboratory } from "../src/laboratories/entities/laboratory.entity";
+import { Class } from "../src/reservations/entities/class.entity";
+import { Event } from "../src/reservations/entities/event.entity";
+import { Ocupation } from "../src/reservations/entities/ocupation.entity";
+import { Reservation } from "../src/reservations/entities/reservation.entity";
+import { ReserveType } from "../src/reservations/entities/reserve_type.entity";
+import { State } from "../src/reservations/entities/state.entity";
+import { User } from "../src/users/entities/user.entity";
 
 const { RRule, rrulestr } = pkgRRule;
 

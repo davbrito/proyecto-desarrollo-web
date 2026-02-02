@@ -14,20 +14,17 @@ import {
   PaginatedSwaggerDocs,
   type PaginateQuery,
 } from "nestjs-paginate";
-import { PermissionEnum } from "../auth/auth.permissions.js";
-import { Auth } from "../auth/decorators/auth.decorator.js";
-import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
-import { RequirePermissions } from "../auth/decorators/permissions.decorator.js";
-import { StatsDto } from "./dto/stats.dto.js";
-import { Reservation } from "./entities/reservation.entity.js";
-import {
-  CreateReservationDto,
-  UpdateReservationDto,
-} from "./reservation.dto.js";
+import { PermissionEnum } from "../auth/auth.permissions";
+import { Auth } from "../auth/decorators/auth.decorator";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { RequirePermissions } from "../auth/decorators/permissions.decorator";
+import { StatsDto } from "./dto/stats.dto";
+import { Reservation } from "./entities/reservation.entity";
+import { CreateReservationDto, UpdateReservationDto } from "./reservation.dto";
 import {
   RESERVATION_PAGINATION_CONFIG,
   ReservationsService,
-} from "./reservations.service.js";
+} from "./reservations.service";
 
 @Auth()
 @Controller("reservations")

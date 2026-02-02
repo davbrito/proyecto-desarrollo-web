@@ -1,4 +1,4 @@
-import { AuthResponseSchema } from "@uneg-lab/api-types/auth.js";
+import { AuthResponseSchema } from "@uneg-lab/api-types/auth";
 import { createZodDto } from "nestjs-zod";
 import { UserDto } from "./user.dto";
 import { IsString } from "class-validator";

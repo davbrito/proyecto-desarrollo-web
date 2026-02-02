@@ -1,18 +1,18 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { type AuthResponse, RoleEnum } from "@uneg-lab/api-types/auth.js";
+import { type AuthResponse, RoleEnum } from "@uneg-lab/api-types/auth";
 import type { Request, Response } from "express";
-import { User } from "../users/entities/user.entity.js";
-import { RefreshTokenService } from "../users/services/refresh-token.service.js";
-import { UsersService } from "../users/services/users.service.js";
+import { User } from "../users/entities/user.entity";
+import { RefreshTokenService } from "../users/services/refresh-token.service";
+import { UsersService } from "../users/services/users.service";
 import {
   ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_MAX_AGE_MS,
-} from "./auth.constants.js";
-import { UserMapper } from "./mappers/user.mapper.js";
-import { RegisterDto } from "./dtos/register.dto.js";
+} from "./auth.constants";
+import { UserMapper } from "./mappers/user.mapper";
+import { RegisterDto } from "./dtos/register.dto";
 
 @Injectable()
 export class AuthService {

@@ -10,8 +10,8 @@ import {
   PrimaryColumn,
   type Relation,
 } from "typeorm";
-import type { TokenPayload } from "../../auth/token-payload.interface.js";
-import { RefreshToken } from "./refresh-token.entity.js";
+import type { TokenPayload } from "../../auth/token-payload.interface";
+import { RefreshToken } from "./refresh-token.entity";
 
 @Entity()
 export class User {

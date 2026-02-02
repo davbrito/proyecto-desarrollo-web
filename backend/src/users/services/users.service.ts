@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { RoleEnum } from "@uneg-lab/api-types/auth.js";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 import { ILike, Repository } from "typeorm";
-import { RegisterDto } from "../../auth/dtos/register.dto.js";
-import { User } from "../entities/user.entity.js";
+import { RegisterDto } from "../../auth/dtos/register.dto";
+import { User } from "../entities/user.entity";
 
 @Injectable()
 export class UsersService {

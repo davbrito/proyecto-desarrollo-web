@@ -6,26 +6,23 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { RoleEnum } from "@uneg-lab/api-types/auth.js";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 import {
   ReservationStateNames,
   ReservationStateEnum,
-} from "@uneg-lab/api-types/reservation.js";
+} from "@uneg-lab/api-types/reservation";
 import {
   FilterOperator,
   paginate,
   PaginateConfig,
   PaginateQuery,
 } from "nestjs-paginate";
-import pkgRRule from "rrule";
+import * as pkgRRule from "rrule";
 import { DataSource, Repository } from "typeorm";
-import { StatsDto } from "./dto/stats.dto.js";
-import { Ocupation } from "./entities/ocupation.entity.js";
-import { Reservation } from "./entities/reservation.entity.js";
-import {
-  CreateReservationDto,
-  UpdateReservationDto,
-} from "./reservation.dto.js";
+import { StatsDto } from "./dto/stats.dto";
+import { Ocupation } from "./entities/ocupation.entity";
+import { Reservation } from "./entities/reservation.entity";
+import { CreateReservationDto, UpdateReservationDto } from "./reservation.dto";
 
 const { RRule, rrulestr } = pkgRRule;
 

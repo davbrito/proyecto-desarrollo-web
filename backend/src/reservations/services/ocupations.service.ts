@@ -5,11 +5,8 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { Ocupation } from "../entities/ocupation.entity.js";
-import {
-  CreateOcupationDto,
-  UpdateOcupationDto,
-} from "../dto/ocupation.dto.js";
+import { Ocupation } from "../entities/ocupation.entity";
+import { CreateOcupationDto, UpdateOcupationDto } from "../dto/ocupation.dto";
 
 @Injectable()
 export class OcupationsService {

@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import type { Relation } from "typeorm";
-import { Reservation } from "./reservation.entity.js";
+import { Reservation } from "./reservation.entity";
 
 @Entity({ name: "classes" })
 export class Class {

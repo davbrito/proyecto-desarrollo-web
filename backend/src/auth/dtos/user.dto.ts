@@ -1,4 +1,4 @@
-import { RoleEnum, UserSchema } from "@uneg-lab/api-types/auth.js";
+import { RoleEnum, UserSchema } from "@uneg-lab/api-types/auth";
 import { IsEmail, IsEnum, IsOptional, IsString } from "class-validator";
 import { createZodDto } from "nestjs-zod";
 

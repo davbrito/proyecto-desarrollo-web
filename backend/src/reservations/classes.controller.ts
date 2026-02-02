@@ -8,9 +8,9 @@ import {
   Delete,
   ParseIntPipe,
 } from "@nestjs/common";
-import { ClassesService } from "./services/classes.service.js";
-import { CreateClassDto, UpdateClassDto } from "./dto/class.dto.js";
-import { Auth } from "../auth/decorators/auth.decorator.js";
+import { ClassesService } from "./services/classes.service";
+import { CreateClassDto, UpdateClassDto } from "./dto/class.dto";
+import { Auth } from "../auth/decorators/auth.decorator";
 
 @Auth()
 @Controller("classes")

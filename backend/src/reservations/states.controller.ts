@@ -8,9 +8,9 @@ import {
   Delete,
   ParseIntPipe,
 } from "@nestjs/common";
-import { StatesService } from "./services/states.service.js";
-import { CreateStateDto, UpdateStateDto } from "./dto/state.dto.js";
-import { Auth } from "../auth/decorators/auth.decorator.js";
+import { StatesService } from "./services/states.service";
+import { CreateStateDto, UpdateStateDto } from "./dto/state.dto";
+import { Auth } from "../auth/decorators/auth.decorator";
 
 @Auth()
 @Controller("states")

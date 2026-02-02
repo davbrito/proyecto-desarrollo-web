@@ -13,17 +13,17 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { ZodResponse } from "nestjs-zod";
-import { User } from "../users/entities/user.entity.js";
-import { UsersService } from "../users/services/users.service.js";
-import { PermissionEnum } from "./auth.permissions.js";
-import { AuthService } from "./auth.service.js";
-import { Auth } from "./decorators/auth.decorator.js";
-import { AuthResponseDto } from "./dtos/auth-response.dto.js";
-import { LoginDto } from "./dtos/login.dto.js";
-import { RegisterDto } from "./dtos/register.dto.js";
-import { UserDto } from "./dtos/user.dto.js";
-import { LocalGuard } from "./guards/local.guard.js";
-import { UserMapper } from "./mappers/user.mapper.js";
+import { User } from "../users/entities/user.entity";
+import { UsersService } from "../users/services/users.service";
+import { PermissionEnum } from "./auth.permissions";
+import { AuthService } from "./auth.service";
+import { Auth } from "./decorators/auth.decorator";
+import { AuthResponseDto } from "./dtos/auth-response.dto";
+import { LoginDto } from "./dtos/login.dto";
+import { RegisterDto } from "./dtos/register.dto";
+import { UserDto } from "./dtos/user.dto";
+import { LocalGuard } from "./guards/local.guard";
+import { UserMapper } from "./mappers/user.mapper";
 
 @Controller("auth")
 export class AuthController {

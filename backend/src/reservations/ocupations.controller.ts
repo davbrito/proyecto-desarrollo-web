@@ -9,9 +9,9 @@ import {
   ParseIntPipe,
   Query,
 } from "@nestjs/common";
-import { OcupationsService } from "./services/ocupations.service.js";
-import { CreateOcupationDto, UpdateOcupationDto } from "./dto/ocupation.dto.js";
-import { Auth } from "../auth/decorators/auth.decorator.js";
+import { OcupationsService } from "./services/ocupations.service";
+import { CreateOcupationDto, UpdateOcupationDto } from "./dto/ocupation.dto";
+import { Auth } from "../auth/decorators/auth.decorator";
 
 @Auth()
 @Controller("ocupations")

@@ -1,9 +1,9 @@
 import { applyDecorators, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiUnauthorizedResponse } from "@nestjs/swagger";
-import { PermissionEnum } from "../auth.permissions.js";
-import { AuthenticatedGuard } from "../guards/authenticated.guard.js";
-import { PermissionsGuard } from "../guards/permissions.guard.js";
-import { RequirePermissions } from "./permissions.decorator.js";
+import { PermissionEnum } from "../auth.permissions";
+import { AuthenticatedGuard } from "../guards/authenticated.guard";
+import { PermissionsGuard } from "../guards/permissions.guard";
+import { RequirePermissions } from "./permissions.decorator";
 
 export function Auth(...permissions: PermissionEnum[]) {
   return applyDecorators(

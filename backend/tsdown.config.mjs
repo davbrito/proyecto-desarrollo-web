@@ -3,7 +3,7 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
   platform: "node",
-  format: "esm",
+  format: "cjs",
   entry: [
     "src/main.ts",
     "src/config/typeorm.ts",

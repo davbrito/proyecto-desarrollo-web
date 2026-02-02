@@ -1,6 +1,6 @@
 {
   "name": "@uneg-lab/backend",
-  "type": "module",
+  "type": "commonjs",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -9,10 +9,10 @@
   "scripts": {
     "build": "pnpm run typecheck && tsdown",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "dev": "tsdown --log-level=error --watch --on-success \"node --enable-source-maps dist/main.mjs\"",
+    "dev": "tsdown --log-level=error --watch --on-success \"node --enable-source-maps dist/main.cjs\"",
     "start": "nest start",
     "start:dev:nest": "nest start --watch",
-    "start:dev": "tsdown --log-level=error --watch --on-success \"node --enable-source-maps dist/main.mjs\"",
+    "start:dev": "tsdown --log-level=error --watch --on-success \"node --enable-source-maps dist/main.cjs\"",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "typecheck": "tsc --noEmit",

@@ -8,9 +8,9 @@ import {
   Delete,
   ParseIntPipe,
 } from "@nestjs/common";
-import { EventsService } from "./services/events.service.js";
-import { CreateEventDto, UpdateEventDto } from "./dto/event.dto.js";
-import { Auth } from "../auth/decorators/auth.decorator.js";
+import { EventsService } from "./services/events.service";
+import { CreateEventDto, UpdateEventDto } from "./dto/event.dto";
+import { Auth } from "../auth/decorators/auth.decorator";
 
 @Auth()
 @Controller("events")

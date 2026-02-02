@@ -5,8 +5,8 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { State } from "../entities/state.entity.js";
-import { CreateStateDto, UpdateStateDto } from "../dto/state.dto.js";
+import { State } from "../entities/state.entity";
+import { CreateStateDto, UpdateStateDto } from "../dto/state.dto";
 
 @Injectable()
 export class StatesService {

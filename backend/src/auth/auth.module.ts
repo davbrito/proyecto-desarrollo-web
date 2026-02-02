@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
-import { RoleEnum } from "@uneg-lab/api-types/auth.js";
-import { UsersModule } from "../users/users.module.js";
-import { AuthController } from "./auth.controller.js";
-import { AuthService } from "./auth.service.js";
-import { JwtStrategy } from "./strategies/jwt.strategy.js";
-import { LocalStrategy } from "./strategies/local.strategy.js";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
+import { UsersModule } from "../users/users.module";
+import { AuthController } from "./auth.controller";
+import { AuthService } from "./auth.service";
+import { JwtStrategy } from "./strategies/jwt.strategy";
+import { LocalStrategy } from "./strategies/local.strategy";
 
 @Module({
   imports: [UsersModule, PassportModule, JwtModule],

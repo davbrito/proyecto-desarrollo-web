@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 import { DataSource } from "typeorm";
-import { databaseConfig } from "./database.js";
+import { databaseConfig } from "./database";
 
 const config = databaseConfig();
 

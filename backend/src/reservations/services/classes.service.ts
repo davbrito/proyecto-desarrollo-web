@@ -5,8 +5,8 @@ import {
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { Class } from "../entities/class.entity.js";
-import { CreateClassDto, UpdateClassDto } from "../dto/class.dto.js";
+import { Class } from "../entities/class.entity";
+import { CreateClassDto, UpdateClassDto } from "../dto/class.dto";
 
 @Injectable()
 export class ClassesService {

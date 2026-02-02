@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { REFRESH_TOKEN_MAX_AGE_MS } from "../../auth/auth.constants.js";
+import { REFRESH_TOKEN_MAX_AGE_MS } from "../../auth/auth.constants";
 import {
   createHashedRefreshToken,
   RefreshToken,
-} from "../entities/refresh-token.entity.js";
+} from "../entities/refresh-token.entity";
 
 @Injectable()
 export class RefreshTokenService {

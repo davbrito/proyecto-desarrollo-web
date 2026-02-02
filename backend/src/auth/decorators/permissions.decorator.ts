@@ -1,5 +1,5 @@
 import { SetMetadata } from "@nestjs/common";
-import { PermissionEnum } from "../auth.permissions.js";
+import { PermissionEnum } from "../auth.permissions";
 
 export const PERMISSIONS_KEY = "permissions";
 export const RequirePermissions = (...permissions: PermissionEnum[]) =>

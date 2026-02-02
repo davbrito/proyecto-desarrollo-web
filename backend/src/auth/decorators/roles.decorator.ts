@@ -1,5 +1,5 @@
 import { SetMetadata } from "@nestjs/common";
-import { RoleEnum } from "@uneg-lab/api-types/auth.js";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
 
 export const ROLES_KEY = "roles";
 export const Roles = (...roles: RoleEnum[]) => SetMetadata(ROLES_KEY, roles);

@@ -8,12 +8,12 @@ import {
   Delete,
   ParseIntPipe,
 } from "@nestjs/common";
-import { ReserveTypesService } from "./services/reserve-types.service.js";
+import { ReserveTypesService } from "./services/reserve-types.service";
 import {
   CreateReserveTypeDto,
   UpdateReserveTypeDto,
-} from "./dto/reserve-type.dto.js";
-import { Auth } from "../auth/decorators/auth.decorator.js";
+} from "./dto/reserve-type.dto";
+import { Auth } from "../auth/decorators/auth.decorator";
 
 @Auth()
 @Controller("reserve-types")
