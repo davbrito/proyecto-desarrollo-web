@@ -48,10 +48,7 @@ export const reservationsService = {
   },
 
   updateState: async (id: number, stateId: number) => {
-    return apiClient
-      .patch(`reservations/${id}/state`, { json: { stateId } })
-      .json()
-      .then(ReservationSchema.parse);
+    return apiClient.patch(`reservations/${id}/state`, { json: { stateId } });
   },
 
   create: async (payload: any) => {
