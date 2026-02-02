@@ -1,8 +1,30 @@
 {
   "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+  },
+}
+
+/*{
+  "compilerOptions": {
     "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.backend.tsbuildinfo",
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
@@ -16,7 +38,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
-      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"]
+      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"],
     },
     // "baseUrl": "./",
     "skipLibCheck": true,
@@ -24,6 +46,6 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
-  }
-}
+    "noFallthroughCasesInSwitch": false,
+  },
+}*/
