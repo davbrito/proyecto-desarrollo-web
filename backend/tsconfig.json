@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
+    "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.backend.tsbuildinfo",
     "module": "commonjs",
+    "moduleResolution": "bundler",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -17,7 +19,10 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-  },
+    "paths": {
+      "@uneg-lab/api-types/*": ["../packages/api-types/lib/*"]
+    }
+  }
 }
 
 /*{
