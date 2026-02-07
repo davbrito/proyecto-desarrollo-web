@@ -1,86 +1,71 @@
 import ReservationForm from "@/components/reservas/reservation-form";
 import { AvailableHours } from "@/components/reservas/reservation-form/schema";
 import { apiClient } from "@/lib/api";
-import { useEffect, useState } from "react";
-import type { Route } from "./+types/nueva";
+import { useUser } from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { RoleEnum } from "@uneg-lab/api-types/auth";
+import { Loader2 } from "lucide-react";
+export default function NuevaReserva() {
+  const { user } = useUser();
 
-export async function clientLoader() {
-  return {
-    availableHours: AvailableHours,
-  };
-}
+  const laboratories = useQuery({
+    queryKey: ["laboratories"],
+    queryFn: ({ signal }) =>
+      apiClient
+        .get("laboratories", { signal, throwHttpErrors: true })
+        .json<any[]>(),
+  });
 
-export default function NuevaReserva({ loaderData }: Route.ComponentProps) {
-  const [laboratorys, setLaboratorys] = useState<any[]>([]);
-  const [stateEventType, setEventType] = useState<any[]>([]);
-  const [reserved, sethoursReserved] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const reserveTypes = useQuery({
+    queryKey: ["reserve-types"],
+    queryFn: ({ signal }) =>
+      apiClient
+        .get("reserve-types", { signal, throwHttpErrors: true })
+        .json<any[]>(),
+  });
 
-  const fetchData = async <T,>(route: string) => {
-    try {
-      const res = await apiClient.get(route, { throwHttpErrors: true });
-      const data = await res.json<T>();
+  const reservations = useQuery({
+    queryKey: ["reservations"],
+    queryFn: ({ signal }) =>
+      apiClient
+        .get("reservations", { signal, throwHttpErrors: true })
+        .json<{ data: any[] }>()
+        .then((response) => response.data),
+  });
 
-      return { data };
-    } catch (error: any) {
-      return { error: error as Error };
-    }
-  };
+  const shouldLoadUsers = !!user && user.role === RoleEnum.ADMIN;
 
-  useEffect(() => {
-    const initReservation = async () => {
-      try {
-        const [resLabs, resTypes, resReserved, user] = await Promise.all([
-          fetchData<any[]>("laboratories"),
-          fetchData<any[]>("reserve-types"),
-          fetchData<any[]>("reservations"),
-          fetchData<any[]>("users"),
-        ]);
+  const users = useQuery({
+    queryKey: ["users"],
+    queryFn: ({ signal }) =>
+      apiClient.get("users", { signal, throwHttpErrors: true }).json<any[]>(),
+    enabled: shouldLoadUsers, // Solo cargar usuarios si el usuario es admin
+  });
 
-        if (resLabs.error || resTypes.error || resReserved.error) {
-          console.error("¡Una petición falló!", {
-            resLabs,
-            resTypes,
-            resReserved,
-          });
-          return;
-        }
+  const isPending =
+    laboratories.isPending ||
+    reserveTypes.isPending ||
+    reservations.isPending ||
+    (shouldLoadUsers && users.isPending);
 
-        const reservation = resReserved.data;
-        setLaboratorys(resLabs.data);
-        setEventType(resTypes.data);
-
-        setUsers(
-          user.data!.map((reser: any) => ({
-            id: reser.id,
-            username: reser.username,
-          })),
-        );
-
-        sethoursReserved(
-          reservation.data.map((reser: any) => ({
-            startDate: reser.startDate,
-            defaultEndTime: reser.defaultEndTime,
-            defaultStartTime: reser.defaultStartTime,
-            rrule: reser.rrule,
-          })),
-        );
-      } catch (err) {
-        console.error("Error crítico en initReservation:", err);
-        throw err;
-      }
-    };
-
-    initReservation();
-  }, []);
+  if (isPending) {
+    return (
+      <div className="flex min-h-60 items-center justify-center">
+        <div className="flex items-center gap-3 rounded-md border bg-white px-4 py-2 shadow-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+          <p className="text-sm text-gray-600">Cargando datos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ReservationForm
-      availableHours={loaderData.availableHours}
-      availableLaboratory={laboratorys}
-      stateTypeEvent={stateEventType}
-      reserved={reserved}
-      users={users}
+      availableHours={AvailableHours}
+      availableLaboratory={laboratories.data ?? []}
+      stateTypeEvent={reserveTypes.data ?? []}
+      reserved={reservations.data ?? []}
+      users={users.data ?? []}
     />
   );
 }

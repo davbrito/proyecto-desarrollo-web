@@ -251,6 +251,7 @@ function ReservationForm({
 
               setSendSuccess(true);
               toast.success("Registro de reserva exitoso");
+              navigate("/reservas");
             } catch (error) {
               toast.error("Error al crear la reservación");
               setErrorFromServer(setError, error);
@@ -258,7 +259,6 @@ function ReservationForm({
               return;
             } finally {
               setLoad(false);
-              navigate("/reservas");
             }
           })}
           className="p-4 md:h-full md:w-auto"
