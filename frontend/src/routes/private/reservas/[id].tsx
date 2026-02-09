@@ -204,7 +204,13 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
     return <div className="p-6">Cargando reserva...</div>;
   }
 
+  const canCancelReservation = isAdmin || reservation.user?.id === user?.id;
+
   const cancelledReservation = () => {
+    if (!canCancelReservation) {
+      toast.error("No tienes permiso para cancelar esta reserva");
+      return;
+    }
     if (
       reservation.state?.name === "RECHAZADO" ||
       reservation.state?.name === "CANCELADO"
@@ -620,26 +626,28 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
                     </div>
                   </div>
                 </div>
-                <div className="mt-6">
-                  <Button
-                    onClick={() => {
-                      cancelledReservation();
-                    }}
-                    disabled={
-                      reservation.state?.name === "RECHAZADO" ||
-                      reservation.state?.name === "CANCELADO"
-                    }
-                    variant="outline"
-                    className={`${
-                      reservation.state?.name === "RECHAZADO" ||
-                      reservation.state?.name === "CANCELADO"
-                        ? "pointer-events-none cursor-not-allowed bg-gray-200 text-gray-500"
-                        : "border-rose-200 text-rose-600 hover:bg-rose-50"
-                    } w-full`}
-                  >
-                    Cancelar Reserva
-                  </Button>
-                </div>
+                {canCancelReservation && (
+                  <div className="mt-6">
+                    <Button
+                      onClick={() => {
+                        cancelledReservation();
+                      }}
+                      disabled={
+                        reservation.state?.name === "RECHAZADO" ||
+                        reservation.state?.name === "CANCELADO"
+                      }
+                      variant="outline"
+                      className={`${
+                        reservation.state?.name === "RECHAZADO" ||
+                        reservation.state?.name === "CANCELADO"
+                          ? "pointer-events-none cursor-not-allowed bg-gray-200 text-gray-500"
+                          : "border-rose-200 text-rose-600 hover:bg-rose-50"
+                      } w-full`}
+                    >
+                      Cancelar Reserva
+                    </Button>
+                  </div>
+                )}
               </Card>
             </div>
           </div>
