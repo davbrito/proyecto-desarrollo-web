@@ -9,7 +9,12 @@ import { formatRecurrence } from "@/lib/rrule";
 import { laboratoriesService } from "@/services/laboratories";
 import { reservationsService } from "@/services/reservations";
 import { usersService } from "@/services/users";
-import { skipToken, useQuery } from "@tanstack/react-query";
+import {
+  skipToken,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
 import { ReservationStateEnum } from "@uneg-lab/api-types/reservation";
 import {
@@ -21,11 +26,12 @@ import {
   Pencil,
   Printer,
   Repeat2,
+  Trash2,
   UserRound,
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { Route } from "./+types/[id]";
 
@@ -113,6 +119,8 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
   const reservationId = Number(params.id);
   const { user } = useUser();
   const isAdmin = user?.role === RoleEnum.ADMIN;
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [printOpen, setPrintOpen] = useState(false);
 
@@ -136,6 +144,19 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
   });
 
   const { mutate: changeState } = useUpdateReservationState();
+
+  const deleteReservation = useMutation({
+    mutationFn: (id: number) => reservationsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      toast.success("Reserva eliminada");
+      navigate("/reservas");
+    },
+    onError: () => {
+      toast.error("No se pudo eliminar la reserva");
+    },
+  });
 
   const handleEditOpenChange = (open: boolean) => {
     setEditOpen(open);
@@ -240,6 +261,19 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
                 <Button className="gap-2" onClick={() => setEditOpen(true)}>
                   <Pencil className="h-4 w-4" />
                   Editar Reserva
+                </Button>
+              )}
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  className="gap-2 border-rose-200 text-rose-600 hover:bg-rose-50"
+                  onClick={() => {
+                    if (!confirm("¿Eliminar esta reserva?")) return;
+                    deleteReservation.mutate(reservation.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Eliminar Reserva
                 </Button>
               )}
               <ReservationEditModal

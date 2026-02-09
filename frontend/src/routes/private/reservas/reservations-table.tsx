@@ -18,7 +18,11 @@ import { useUpdateReservationState } from "@/hooks/use-update-reservation-state"
 import { useUser } from "@/lib/auth";
 import { getInitials } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
 import { ReservationStateEnum } from "@uneg-lab/api-types/reservation";
 import {
@@ -29,6 +33,7 @@ import {
   Eye,
   Filter,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 import React, { useState } from "react";
@@ -62,6 +67,7 @@ export function ReservationsTable() {
 
   const { user } = useUser();
   const isAdmin = user?.role === RoleEnum.ADMIN;
+  const queryClient = useQueryClient();
 
   const { data } = useSuspenseQuery({
     queryKey: ["reservations", { search, typeActivity, statusFilter, page }],
@@ -76,6 +82,13 @@ export function ReservationsTable() {
   });
 
   const { mutate: changeState } = useUpdateReservationState();
+
+  const deleteReservation = useMutation({
+    mutationFn: (id: number) => reservationsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+    },
+  });
 
   const total = data.meta?.totalItems ?? 0;
   const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -278,7 +291,7 @@ export function ReservationsTable() {
                           r.state?.id === ReservationStateEnum.PENDIENTE && (
                             <>
                               <Button
-                                size="sm"
+                                size="icon-sm"
                                 onClick={() =>
                                   updateReservationStatus(
                                     r.id,
@@ -286,13 +299,13 @@ export function ReservationsTable() {
                                     ReservationStateEnum.APROBADO,
                                   )
                                 }
-                                className="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400"
                                 title="Aprobar"
                               >
-                                <Check className="size-4" />
+                                <Check />
                               </Button>
                               <Button
-                                size="sm"
+                                size="icon-sm"
                                 onClick={() =>
                                   updateReservationStatus(
                                     r.id,
@@ -300,26 +313,34 @@ export function ReservationsTable() {
                                     ReservationStateEnum.RECHAZADO,
                                   )
                                 }
-                                className="h-8 w-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400"
+                                className="bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400"
                                 title="Rechazar"
                               >
-                                <X className="size-4" />
+                                <X />
                               </Button>
                             </>
                           )}
-                        <Button
-                          asChild
-                          size="sm"
-                          variant="outline"
-                          className="h-8 w-8 rounded-lg"
-                        >
+                        <Button asChild size="icon-sm" variant="outline">
                           <Link
                             to={`/reservas/${r.id}`}
                             aria-label="Ver detalles"
                           >
-                            <Eye className="size-4" />
+                            <Eye />
                           </Link>
                         </Button>
+                        {isAdmin && (
+                          <Button
+                            size="icon-sm"
+                            variant="destructive"
+                            title="Eliminar"
+                            onClick={() => {
+                              if (!confirm("¿Eliminar esta reserva?")) return;
+                              deleteReservation.mutate(r.id);
+                            }}
+                          >
+                            <Trash2 />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

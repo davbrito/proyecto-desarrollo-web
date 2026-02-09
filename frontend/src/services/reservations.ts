@@ -64,6 +64,10 @@ export const reservationsService = {
     return apiClient.patch(`reservations/${id}/state`, { json: { stateId } });
   },
 
+  delete: async (id: number) => {
+    return apiClient.delete(`reservations/${id}`).json();
+  },
+
   create: async (payload: any) => {
     return apiClient.post("reservations", { json: payload });
   },

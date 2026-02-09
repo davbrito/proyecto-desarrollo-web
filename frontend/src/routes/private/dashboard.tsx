@@ -16,12 +16,17 @@ import { useUpdateReservationState } from "@/hooks/use-update-reservation-state"
 import { useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { reservationsService } from "@/services/reservations";
-import { useInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
 import {
   ReservationStateEnum,
-  type Reservation,
   ReservationStateNames as ReservationStates,
+  type Reservation,
 } from "@uneg-lab/api-types/reservation";
 import {
   ReserveTypeNames,
@@ -35,6 +40,7 @@ import {
   EyeIcon,
   Loader2,
   MapPinIcon,
+  Trash2Icon,
   XIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -69,6 +75,7 @@ export default function DashboardPage(_: Route.ComponentProps) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const { user } = useUser();
   const isAdmin = user?.role === RoleEnum.ADMIN;
+  const queryClient = useQueryClient();
 
   const { data: stats } = useSuspenseQuery({
     queryKey: ["dashboard", "stats"],
@@ -102,6 +109,14 @@ export default function DashboardPage(_: Route.ComponentProps) {
   });
 
   const { mutate: changeState } = useUpdateReservationState();
+
+  const deleteReservation = useMutation({
+    mutationFn: (id: number) => reservationsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+    },
+  });
 
   const filteredReservas = recent?.pages.flatMap((page) => page.data) ?? [];
 
@@ -208,6 +223,7 @@ export default function DashboardPage(_: Route.ComponentProps) {
                       stateId: ReservationStateEnum.RECHAZADO,
                     })
                   }
+                  onDelete={() => deleteReservation.mutate(reserva.id)}
                 />
               ))
             ) : (
@@ -290,11 +306,13 @@ function CardReserva({
   isAdmin,
   onApprove,
   onReject,
+  onDelete,
 }: {
   reserva: Reservation;
   isAdmin: boolean;
   onApprove: () => void;
   onReject: () => void;
+  onDelete: () => void;
 }) {
   const isPending = reserva.state?.name === ReservationStates.PENDIENTE;
 
@@ -367,6 +385,20 @@ function CardReserva({
               <EyeIcon className="h-4 w-4" />
             </Link>
           </Button>
+          {isAdmin && (
+            <Button
+              size="icon"
+              variant="destructive"
+              className="h-9 w-9 rounded-full"
+              title="Eliminar"
+              onClick={() => {
+                if (!confirm("¿Eliminar esta reserva?")) return;
+                onDelete();
+              }}
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     </Card>
