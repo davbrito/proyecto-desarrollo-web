@@ -1,12 +1,5 @@
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
   Table,
   TableBody,
   TableCell,
@@ -17,7 +10,7 @@ import {
 import { useUpdateReservationState } from "@/hooks/use-update-reservation-state";
 import { useUser } from "@/lib/auth";
 import { getInitials } from "@/lib/utils";
-import { laboratoriesService } from "@/services/laboratories";
+import { ReservationsFilters } from "@/routes/private/reservas/reservations-filters";
 import { reservationsService } from "@/services/reservations";
 import {
   useMutation,
@@ -32,12 +25,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  Filter,
-  Search,
   Trash2,
   X,
 } from "lucide-react";
-import React, { startTransition, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -94,16 +85,6 @@ export function ReservationsTable() {
       }),
   });
 
-  const { data: laboratories } = useSuspenseQuery({
-    queryKey: ["laboratories"],
-    queryFn: () => laboratoriesService.getAll(),
-  });
-
-  const selectedLaboratoryName =
-    laboratoryId != null
-      ? laboratories.find((lab) => lab.id === laboratoryId)?.name
-      : null;
-
   const { mutate: changeState } = useUpdateReservationState();
 
   const deleteReservation = useMutation({
@@ -145,120 +126,36 @@ export function ReservationsTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dbdfe6] bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-[#1e232e]">
-        <label className="relative flex h-10 min-w-[320px] items-center">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#616f89]">
-            <Search className="size-4" />
-          </div>
-          <Input
-            placeholder="Buscar por profesor, laboratorio o solicitud..."
-            className="pl-10"
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                setSearch.flush();
-              }
-            }}
-          />
-        </label>
-
-        <div className="flex items-center gap-2">
-          {/* Menú Tipo de Actividad */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                className="bg-gray-100 text-gray-600 shadow-xs hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300"
-              >
-                Actividad: {typeActivity || "Todas"}
-                <ChevronRight className="size-4 rotate-90 text-gray-400" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-              {["", "CLASE", "EVENTO", "MANTENIMIENTO"].map((type) => (
-                <DropdownMenuItem
-                  key={type}
-                  onClick={() => {
-                    setTypeActivity(type as any);
-                    setPage(1);
-                  }}
-                >
-                  {type || "Todas"}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Menú Laboratorio */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                className="bg-gray-100 text-gray-600 shadow-xs hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300"
-              >
-                Laboratorio: {selectedLaboratoryName || "Todos"}
-                <ChevronRight className="size-4 rotate-90 text-gray-400" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem
-                onClick={() => {
-                  startTransition(() => {
-                    setLaboratoryId(null);
-                    setPage(1);
-                  });
-                }}
-              >
-                Todos
-              </DropdownMenuItem>
-              {laboratories.map((lab) => (
-                <DropdownMenuItem
-                  key={lab.id}
-                  onClick={() => {
-                    startTransition(() => {
-                      setLaboratoryId(lab.id);
-                      setPage(1);
-                    });
-                  }}
-                >
-                  {lab.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Menú Estado de Reserva */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="secondary"
-                className="bg-gray-100 text-gray-600 shadow-xs hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300"
-              >
-                Estado: {statusFilter || "Todos"}
-                <Filter className="size-4 text-gray-400" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-              {["", "PENDIENTE", "APROBADO", "RECHAZADO", "CANCELADO"].map(
-                (status) => (
-                  <DropdownMenuItem
-                    key={status}
-                    onClick={() => {
-                      setStatusFilter(status);
-                      setPage(1);
-                    }}
-                  >
-                    {status || "Todos"}
-                  </DropdownMenuItem>
-                ),
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
+      <ReservationsFilters
+        typeActivity={typeActivity}
+        statusFilter={statusFilter}
+        laboratoryId={laboratoryId}
+        onSearchChange={(value) => {
+          setSearch(value);
+          setPage(1);
+        }}
+        onSearchSubmit={() => setSearch.flush()}
+        onTypeChange={(value) => {
+          setTypeActivity(value);
+          setPage(1);
+        }}
+        onStatusChange={(value) => {
+          setStatusFilter(value);
+          setPage(1);
+        }}
+        onLaboratoryChange={(value) => {
+          setLaboratoryId(value);
+          setPage(1);
+        }}
+        onClearFilters={() => {
+          setTypeActivity("");
+          setStatusFilter("");
+          setLaboratoryId(null);
+          setSearch("");
+          setSearch.flush();
+          setPage(1);
+        }}
+      />
 
       <div className="overflow-hidden rounded-xl border border-[#dbdfe6] bg-white shadow-sm dark:border-gray-700 dark:bg-[#1e232e]">
         <div className="overflow-x-auto">
