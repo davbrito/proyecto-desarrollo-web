@@ -6,8 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -21,6 +21,7 @@ import type { Reservation } from "@uneg-lab/api-types/reservation";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { reservationsService } from "@/services/reservations";
+import { AvailableHours } from "@/components/reservas/reservation-form/schema";
 
 type ReservationEditFormValues = {
   laboratoryId: string;
@@ -76,7 +77,7 @@ export function ReservationEditModal({
     },
   });
 
-  const { control, register, handleSubmit } = form;
+  const { control, handleSubmit, register } = form;
 
   const normalizeTime = (value: string) =>
     value.length === 5 ? `${value}:00` : value;
@@ -178,15 +179,28 @@ export function ReservationEditModal({
               <Label htmlFor="edit-start-time">Hora inicio</Label>
               <Input
                 id="edit-start-time"
+                list="horas-disponibles-edicion"
                 type="time"
                 {...register("startTime")}
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-end-time">Hora fin</Label>
-              <Input id="edit-end-time" type="time" {...register("endTime")} />
+              <Input
+                id="edit-end-time"
+                list="horas-disponibles-edicion"
+                type="time"
+                {...register("endTime")}
+              />
             </div>
           </div>
+          <datalist id="horas-disponibles-edicion">
+            {AvailableHours.map((hour) => (
+              <option key={hour} value={hour}>
+                {hour}
+              </option>
+            ))}
+          </datalist>
 
           <div className="grid gap-2">
             <Label htmlFor="edit-user">Asignar a</Label>
