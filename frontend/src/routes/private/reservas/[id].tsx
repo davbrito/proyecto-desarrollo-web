@@ -1,38 +1,17 @@
+import { ReservationReceiptModal } from "@/components/reservas/reservation-receipt-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ReservationEditModal } from "@/components/reservas/reservation-edit-modal";
 import { useUpdateReservationState } from "@/hooks/use-update-reservation-state";
 import { useUser } from "@/lib/auth";
 import { formatRecurrence } from "@/lib/rrule";
-import { reservationsService } from "@/services/reservations";
 import { laboratoriesService } from "@/services/laboratories";
+import { reservationsService } from "@/services/reservations";
 import { usersService } from "@/services/users";
+import { skipToken, useQuery } from "@tanstack/react-query";
 import { RoleEnum } from "@uneg-lab/api-types/auth";
 import { ReservationStateEnum } from "@uneg-lab/api-types/reservation";
-import {
-  skipToken,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
 import {
   Building2,
   CalendarIcon,
@@ -45,7 +24,7 @@ import {
   UserRound,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
 import type { Route } from "./+types/[id]";
@@ -134,14 +113,8 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
   const reservationId = Number(params.id);
   const { user } = useUser();
   const isAdmin = user?.role === RoleEnum.ADMIN;
-  const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
-  const [editValues, setEditValues] = useState({
-    laboratoryId: "",
-    startTime: "",
-    endTime: "",
-    userId: "",
-  });
+  const [printOpen, setPrintOpen] = useState(false);
 
   const { data: reservation, isSuccess } = useQuery({
     queryKey: ["reservation", reservationId],
@@ -164,37 +137,9 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
 
   const { mutate: changeState } = useUpdateReservationState();
 
-  const updateMutation = useMutation({
-    mutationFn: (payload: {
-      laboratoryId?: number;
-      defaultStartTime?: string;
-      defaultEndTime?: string;
-      userId?: string;
-    }) => reservationsService.update(reservationId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["reservation", reservationId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      toast.success("Reserva actualizada");
-      setEditOpen(false);
-    },
-    onError: () => {
-      toast.error("No se pudo actualizar la reserva");
-    },
-  });
-
-  useEffect(() => {
-    if (!reservation) return;
-    setEditValues({
-      laboratoryId: reservation.laboratory?.id
-        ? String(reservation.laboratory.id)
-        : "",
-      startTime: reservation.defaultStartTime?.slice(0, 5) ?? "",
-      endTime: reservation.defaultEndTime?.slice(0, 5) ?? "",
-      userId: reservation.user?.id ?? "",
-    });
-  }, [reservation]);
+  const handleEditOpenChange = (open: boolean) => {
+    setEditOpen(open);
+  };
 
   if (!Number.isFinite(reservationId)) {
     return <div className="p-6">ID inválido</div>;
@@ -241,39 +186,8 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
     ? `Hasta el ${formatDate(reservation.endDate)}`
     : "Sin fecha de fin";
 
-  const normalizeTime = (value: string) =>
-    value.length === 5 ? `${value}:00` : value;
-
-  const handleUpdateReservation = () => {
-    if (!editValues.laboratoryId) {
-      toast.error("Selecciona un laboratorio");
-      return;
-    }
-    if (!editValues.startTime || !editValues.endTime) {
-      toast.error("Selecciona la hora de inicio y fin");
-      return;
-    }
-    if (editValues.startTime >= editValues.endTime) {
-      toast.error("La hora de inicio debe ser menor a la hora de fin");
-      return;
-    }
-
-    const payload: {
-      laboratoryId: number;
-      defaultStartTime: string;
-      defaultEndTime: string;
-      userId?: string;
-    } = {
-      laboratoryId: Number(editValues.laboratoryId),
-      defaultStartTime: normalizeTime(editValues.startTime),
-      defaultEndTime: normalizeTime(editValues.endTime),
-    };
-
-    if (isAdmin && editValues.userId) {
-      payload.userId = editValues.userId;
-    }
-
-    updateMutation.mutate(payload);
+  const handlePrintReceipt = () => {
+    setPrintOpen(true);
   };
 
   return (
@@ -314,141 +228,36 @@ export default function ReservasPage({ params }: Route.ComponentProps) {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" className="gap-2">
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={handlePrintReceipt}
+              >
                 <Printer className="h-4 w-4" />
                 Imprimir Comprobante
               </Button>
               {isAdmin && (
-                <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="gap-2">
-                      <Pencil className="h-4 w-4" />
-                      Editar Reserva
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-xl">
-                    <DialogHeader>
-                      <DialogTitle>Editar reserva</DialogTitle>
-                      <DialogDescription>
-                        Actualiza el laboratorio, horario y el solicitante si es
-                        necesario.
-                      </DialogDescription>
-                    </DialogHeader>
-
-                    <div className="grid gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="edit-laboratory">Laboratorio</Label>
-                        <Select
-                          value={editValues.laboratoryId}
-                          onValueChange={(value) =>
-                            setEditValues((prev) => ({
-                              ...prev,
-                              laboratoryId: value,
-                            }))
-                          }
-                        >
-                          <SelectTrigger id="edit-laboratory">
-                            <SelectValue placeholder="Selecciona un laboratorio" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {laboratoriesQuery.isPending && (
-                              <SelectItem value="loading" disabled>
-                                Cargando...
-                              </SelectItem>
-                            )}
-                            {laboratoriesQuery.data?.map((lab) => (
-                              <SelectItem key={lab.id} value={String(lab.id)}>
-                                {lab.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <div className="grid gap-2">
-                          <Label htmlFor="edit-start-time">Hora inicio</Label>
-                          <Input
-                            id="edit-start-time"
-                            type="time"
-                            value={editValues.startTime}
-                            onChange={(event) =>
-                              setEditValues((prev) => ({
-                                ...prev,
-                                startTime: event.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="edit-end-time">Hora fin</Label>
-                          <Input
-                            id="edit-end-time"
-                            type="time"
-                            value={editValues.endTime}
-                            onChange={(event) =>
-                              setEditValues((prev) => ({
-                                ...prev,
-                                endTime: event.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      {isAdmin && (
-                        <div className="grid gap-2">
-                          <Label htmlFor="edit-user">Asignar a</Label>
-                          <Select
-                            value={editValues.userId}
-                            onValueChange={(value) =>
-                              setEditValues((prev) => ({
-                                ...prev,
-                                userId: value,
-                              }))
-                            }
-                          >
-                            <SelectTrigger id="edit-user">
-                              <SelectValue placeholder="Selecciona un usuario" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {usersQuery.isPending && (
-                                <SelectItem value="loading-users" disabled>
-                                  Cargando...
-                                </SelectItem>
-                              )}
-                              {usersQuery.data?.map((person) => (
-                                <SelectItem key={person.id} value={person.id}>
-                                  {person.name} ({person.username})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-                    </div>
-
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setEditOpen(false)}
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        onClick={handleUpdateReservation}
-                        disabled={updateMutation.isPending}
-                      >
-                        {updateMutation.isPending
-                          ? "Guardando..."
-                          : "Guardar cambios"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button className="gap-2" onClick={() => setEditOpen(true)}>
+                  <Pencil className="h-4 w-4" />
+                  Editar Reserva
+                </Button>
               )}
+              <ReservationEditModal
+                isAdmin={isAdmin}
+                open={editOpen}
+                onOpenChange={handleEditOpenChange}
+                reservation={reservation}
+                laboratoriesQuery={laboratoriesQuery}
+                usersQuery={usersQuery}
+              />
             </div>
           </div>
+
+          <ReservationReceiptModal
+            open={printOpen}
+            onOpenChange={setPrintOpen}
+            reservation={reservation}
+          />
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="flex flex-col gap-6 lg:col-span-2">
