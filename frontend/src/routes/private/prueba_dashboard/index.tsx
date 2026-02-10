@@ -217,6 +217,10 @@ export default function PruebaDashboard() {
               <Await resolve={loaderData.reservas}>
                 {(reservas) => (
                   <>
+                    <p className="text-muted-foreground text-sm">
+                      Se muestran como máximo {LIMIT_PREVIEW} solicitudes. El
+                      total por estado aparece en las tarjetas de arriba.
+                    </p>
                     {reservas.slice(0, LIMIT_PREVIEW).map((reserva) => (
                       <Card key={reserva.id} className="border">
                         <CardContent className="p-4">
