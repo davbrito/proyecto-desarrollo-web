@@ -136,9 +136,16 @@ export async function refreshSession(): Promise<AuthResponse | null> {
     credentials: "include",
   })
     .then((response) =>
-      response.ok ? response.json().then(AuthResponseSchema.parse) : null,
+      response.ok
+        ? response.json().then(AuthResponseSchema.parse)
+        : response.status === 401
+          ? null
+          : Promise.reject(
+              new Error(
+                `Failed to refresh session: ${response.statusText} (status ${response.status})`,
+              ),
+            ),
     )
-    .catch(() => null)
     .then(async (data) => {
       setSession(data);
       resolveRefresh(data);
