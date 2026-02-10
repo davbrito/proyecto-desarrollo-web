@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUpdateReservationState } from "@/hooks/use-update-reservation-state";
 import { useUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { dashboardService } from "@/services/dashboard";
 import { reservationsService } from "@/services/reservations";
 import {
   useInfiniteQuery,
@@ -38,6 +39,7 @@ import {
   CheckIcon,
   ClockIcon,
   EyeIcon,
+  FileDown,
   Loader2,
   MapPinIcon,
   Trash2Icon,
@@ -81,6 +83,21 @@ export default function DashboardPage(_: Route.ComponentProps) {
     queryKey: ["dashboard", "stats"],
     queryFn: () => reservationsService.stats(),
   });
+
+  const handleDownloadPdf = async () => {
+    try {
+      const file = await dashboardService.downloadPdf();
+      const url = URL.createObjectURL(file);
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.download = file.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch {
+      window.open("/api/dashboard/pdf", "_blank");
+    }
+  };
 
   const {
     data: recent,
@@ -133,6 +150,12 @@ export default function DashboardPage(_: Route.ComponentProps) {
               Sistema de Reservas Laboratorio UNEG
             </p>
           </div>
+          <Button variant="outline" size="sm" onClick={handleDownloadPdf}>
+            <FileDown className="h-3 w-3" />
+            <span className="ml-2 text-xs font-medium tracking-wide uppercase">
+              PDF
+            </span>
+          </Button>
         </div>
 
         {/* Stats Cards */}

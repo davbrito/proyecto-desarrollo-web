@@ -1,8 +1,8 @@
-import { Controller, Get, Res } from "@nestjs/common";
-import type { Response } from "express";
+import { Controller, Get, StreamableFile } from "@nestjs/common";
 import { Auth } from "../auth/decorators/auth.decorator.js";
 import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
 import { DashboardService } from "./dashboard.service.js";
+import { DateTime } from "luxon";
 
 @Auth()
 @Controller("dashboard")
@@ -10,16 +10,14 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get("pdf")
-  async getPdf(
-    @Res({ passthrough: false }) res: Response,
-    @CurrentUser() user: Express.User,
-  ) {
-    const buffer = await this.dashboardService.generatePdf(user);
-    res.set({
-      "Content-Type": "application/pdf",
-      "Content-Disposition": 'attachment; filename="reservas-uneg.pdf"',
-      "Content-Length": buffer.length,
+  async getPdf(@CurrentUser() user: Express.User) {
+    const stream = await this.dashboardService.generatePdf(user);
+    const timestamp = DateTime.now().toFormat("yyyyLLdd-HHmmss");
+    const fileName = `reservas-uneg-${timestamp}.pdf`;
+
+    return new StreamableFile(stream, {
+      type: "application/pdf",
+      disposition: `inline; filename="${fileName}"`,
     });
-    res.send(buffer);
   }
 }
