@@ -3,8 +3,15 @@ name: CI Tests
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/deploy-docs.yml"
   pull_request:
     branches: ["main"]
+    paths-ignore:
+      - "docs/**"
+      - ".github/workflows/deploy-docs.yml"
+
 
 jobs:
   backend-tests:
