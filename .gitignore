@@ -146,3 +146,6 @@ vite.config.ts.timestamp-*
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .vercel
+
+.vitepress/cache
+.vitepress/dist

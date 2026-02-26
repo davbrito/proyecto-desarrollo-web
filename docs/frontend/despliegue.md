@@ -1,7 +1,5 @@
 # Guía de Despliegue del Frontend
 
-[**Inicio**](./README.md) | [Decisiones Técnicas](./decisiones-tecnicas.md) | [Despliegue](./despliegue.md)
-
 ---
 
 Esta guía describe el despliegue actual del frontend del monorepo.

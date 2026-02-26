@@ -1,7 +1,5 @@
 # Frontend Docs — UNEG Lab
 
-[« Volver al proyecto](../../README.md) | [**Inicio**](./README.md) | [Decisiones Técnicas](./decisiones-tecnicas.md) | [Despliegue](./despliegue.md)
-
 ---
 
 Documentación funcional del cliente web (React + React Router + Vite).

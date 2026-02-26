@@ -1,12 +1,10 @@
 # Decisiones Técnicas del Frontend
 
-[**Inicio**](./README.md) | [Decisiones Técnicas](./decisiones-tecnicas.md) | [Despliegue](./despliegue.md)
-
 ---
 
 Este documento resume decisiones de arquitectura implementadas actualmente en la app.
 
-## 1) Enrutamiento con React Router 7
+## Enrutamiento con React Router 7
 
 **Decisión:** usar configuración central de rutas en `frontend/src/routes.ts` con layouts anidados para separar áreas públicas y privadas.
 
@@ -16,7 +14,7 @@ Este documento resume decisiones de arquitectura implementadas actualmente en la
 - Reutilización de layouts por contexto (auth vs zona privada).
 - Mejor mantenimiento al crecer módulos funcionales.
 
-## 2) Cliente HTTP con ky y prefijo de API
+## Cliente HTTP con ky y prefijo de API
 
 **Decisión:** centralizar llamadas HTTP en `frontend/src/lib/api.ts` usando `ky.create`.
 
@@ -25,7 +23,7 @@ Este documento resume decisiones de arquitectura implementadas actualmente en la
 - Un único punto para `credentials: include`, headers y manejo de errores.
 - Prefijo de API consistente con `API_PREFIX = ${VITE_API_URL}/api`.
 
-## 3) Sesión y autenticación
+## Sesión y autenticación
 
 **Decisión:** modelo híbrido con access token en memoria y refresh token en cookie httpOnly.
 
@@ -37,7 +35,7 @@ Implementación en `frontend/src/lib/auth.ts` y `frontend/src/lib/api.ts`:
 
 **Motivación:** reducir exposición de tokens frente a XSS y mantener UX de sesión continua.
 
-## 4) Estado remoto con TanStack Query
+## Estado remoto con TanStack Query
 
 **Decisión:** usar TanStack Query para datos de servidor y cacheado.
 
@@ -47,7 +45,7 @@ Implementación en `frontend/src/lib/auth.ts` y `frontend/src/lib/api.ts`:
 - Invalidación y refetch predecibles.
 - Menor lógica manual de sincronización en componentes.
 
-## 5) Estado local/global con Zustand
+## Estado local/global con Zustand
 
 **Decisión:** usar Zustand para estado de sesión y utilidades globales ligeras.
 
@@ -56,7 +54,7 @@ Implementación en `frontend/src/lib/auth.ts` y `frontend/src/lib/api.ts`:
 - Menos boilerplate que Redux.
 - API simple y mantenible para dominios acotados.
 
-## 6) Contrato de tipos compartido
+## Contrato de tipos compartido
 
 **Decisión:** consumir esquemas y tipos desde `@uneg-lab/api-types`.
 
@@ -66,7 +64,7 @@ Implementación en `frontend/src/lib/auth.ts` y `frontend/src/lib/api.ts`:
 - Validación alineada con backend (Zod).
 - Detección temprana de cambios incompatibles en build/typecheck.
 
-## 7) Formularios y validación
+## Formularios y validación
 
 **Decisión:** React Hook Form + `zodResolver`.
 
@@ -75,13 +73,13 @@ Implementación en `frontend/src/lib/auth.ts` y `frontend/src/lib/api.ts`:
 - Facilidad en el manejo de formularios.
 - Mensajes de validación tipados y consistentes con el schema.
 
-## 8) Interfaz de Usuario con shadcn/ui y Tailwind CSS
+## Interfaz de Usuario con shadcn/ui y Tailwind CSS
 
 **Decisión:** adoptar `shadcn/ui` junto con `Tailwind CSS 4` para la construcción de la interfaz.
 
 **Motivación:**
 
-- **Agilidad en el desarrollo:** Permite integrar componentes complejos (diálogos, tablas, calendarios) rápidamente sin sacrificar la personalización.
+- **Agilidad en el desarrollo:** Permite integrar componentes complejos (diálogos, tablas, calendari rápidamente sin sacrificar la personalización.
 - **Control Total:** A diferencia de las librerías de componentes tradicionales, `shadcn` copia el código fuente al proyecto, facilitando modificaciones específicas sin lidiar con abstracciones de terceros.
 - **Accesibilidad:** Los componentes están basados en **Radix UI**, garantizando el cumplimiento de estándares de accesibilidad (WAI-ARIA).
 - **Consistencia:** Tailwind asegura un sistema de diseño coherente basado en utilidades y variables CSS compartidas.
