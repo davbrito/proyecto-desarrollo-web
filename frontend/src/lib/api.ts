@@ -3,8 +3,7 @@ import type { UseFormSetError } from "react-hook-form";
 import type z from "zod";
 import { getAccessToken, refreshSession } from "./auth";
 
-const rawApiUrl = (import.meta.env.VITE_API_URL as string) || (import.meta.env as any).API_URL || "";
-const prefixUrl = rawApiUrl ? `${rawApiUrl.replace(/\/$/, "")}/api` : "/api";
+const prefixUrl = `${import.meta.env.VITE_API_URL?.replace(/\/$/, "") || ""}/api`;
 
 export const apiClient = ky.create({
   prefixUrl,
@@ -32,10 +31,12 @@ export const apiClient = ky.create({
         if (state.retryCount > 1) {
           console.warn("Max retries reached. Redirecting to login.");
         } else {
-          token = await refreshSession().then((res) => res?.accessToken).catch((err) => {
-            console.error("Failed to refresh session:", err);
-            return null;
-          });
+          token = await refreshSession()
+            .then((res) => res?.accessToken)
+            .catch((err) => {
+              console.error("Failed to refresh session:", err);
+              return null;
+            });
         }
 
         if (!token) {
