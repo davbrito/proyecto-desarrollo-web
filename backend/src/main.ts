@@ -13,11 +13,6 @@ async function bootstrap() {
     logger: new ConsoleLogger({
       json: process.env.NODE_ENV === "production",
     }),
-    cors: {
-      origin:
-        process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL : true,
-      credentials: true,
-    },
   });
   app.setGlobalPrefix("api");
 
