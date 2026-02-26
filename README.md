@@ -45,9 +45,19 @@ Variables importantes:
 
 ---
 
-## 🛠️ Desarrollo
+## � Documentación Directa
+
+Para entender la arquitectura y flujo del proyecto, consulta:
+
+- **Frontend:** [Guía de Inicio](./docs/frontend/README.md) | [Decisiones Técnicas](./docs/frontend/decisiones-tecnicas.md) | [Guía de Despliegue](./docs/frontend/despliegue.md)
+- **Backend:** (En construcción en `backend/README.md`)
+
+---
+
+## �🛠️ Desarrollo
 
 Ejecuta en terminales separados:
+
 
 - Frontend (dev):
 

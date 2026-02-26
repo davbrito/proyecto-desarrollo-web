@@ -4,6 +4,16 @@ Interfaz de usuario del sistema de reservas. Implementada con React 19, Vite y T
 
 ---
 
+## 📚 Documentación
+
+Puedes encontrar información detallada en los siguientes apartados:
+
+- [**Guía Principal**](../docs/frontend/README.md)
+- [**Decisiones Técnicas**](../docs/frontend/decisiones-tecnicas.md)
+- [**Guía de Despliegue**](../docs/frontend/despliegue.md)
+
+---
+
 ## Requisitos
 
 - Node.js >= 22
