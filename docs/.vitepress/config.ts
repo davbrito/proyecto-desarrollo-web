@@ -4,10 +4,13 @@ const githubUrl = process.env.VERCEL
   ? `https://github.com/${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}`
   : "#";
 
+const vitepressBase = process.env.VITEPRESS_BASE ?? "/";
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Sistema Laboratorio UNEG",
   description: "Gestión de Reservas de Laboratorios",
+  base: vitepressBase,
 
   srcDir: ".",
   themeConfig: {
