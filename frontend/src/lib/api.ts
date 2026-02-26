@@ -3,8 +3,11 @@ import type { UseFormSetError } from "react-hook-form";
 import type z from "zod";
 import { getAccessToken, refreshSession } from "./auth";
 
+const rawApiUrl = (import.meta.env.VITE_API_URL as string) || (import.meta.env as any).API_URL || "";
+const prefixUrl = rawApiUrl ? `${rawApiUrl.replace(/\/$/, "")}/api` : "/api";
+
 export const apiClient = ky.create({
-  prefixUrl: "/api",
+  prefixUrl,
   credentials: "include",
   headers: {
     Accept: "application/json",

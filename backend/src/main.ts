@@ -13,6 +13,7 @@ async function bootstrap() {
     logger: new ConsoleLogger({
       json: process.env.NODE_ENV === "production",
     }),
+    cors: true,
   });
 
   app.setGlobalPrefix("api");
@@ -21,7 +22,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
       transform: true,
     }),
   );
