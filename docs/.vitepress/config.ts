@@ -14,6 +14,28 @@ export default defineConfig({
 
   srcDir: ".",
   themeConfig: {
+    search: {
+      provider: "local",
+      options: {
+        translations: {
+          button: {
+            buttonText: "Buscar",
+            buttonAriaLabel: "Buscar",
+          },
+          modal: {
+            noResultsText: "No se encontraron resultados",
+            resetButtonTitle: "Limpiar búsqueda",
+            backButtonTitle: "Cerrar búsqueda",
+            displayDetails: "Mostrar detalles",
+            footer: {
+              navigateText: "Navegar",
+              selectText: "Seleccionar",
+              closeText: "Cerrar",
+            },
+          },
+        },
+      },
+    },
     nav: [
       { text: "Inicio", link: "/" },
       { text: "Frontend", link: "/frontend/" },
