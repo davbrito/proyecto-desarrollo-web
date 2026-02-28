@@ -11,7 +11,7 @@ hero:
       link: /frontend
     - theme: alt
       text: Backend
-      link: /backend
+      link: /backend/api
 
 features:
   - title: Frontend
