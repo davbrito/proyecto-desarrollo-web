@@ -60,8 +60,8 @@ export default defineConfig({
         {
           text: "Backend",
           items: [
-            { text: "Inicio", link: "/backend/" },
-            { text: "Architectura", link: "/backend/arquitectura" },
+            //{ text: "Inicio", link: "/backend/" },
+            //{ text: "Architectura", link: "/backend/arquitectura" },
             {
               text: "Decisiones técnicas",
               link: "/backend/decisiones-tecnicas",
