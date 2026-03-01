@@ -39,7 +39,7 @@ export default defineConfig({
     nav: [
       { text: "Inicio", link: "/" },
       { text: "Frontend", link: "/frontend/" },
-      { text: "Backend", link: "/backend/" },
+      { text: "Backend", link: "/backend/api" },
     ],
 
     sidebar: {
